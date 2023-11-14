@@ -1,6 +1,6 @@
 # The Ramanujan Machine Web Portal
 
-To run the project locally:
+To run the project locally, ensure that you have all dependcies installed using `npm ci`.
 
 ### `npm start`
 
