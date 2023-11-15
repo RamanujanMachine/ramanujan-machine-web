@@ -1,5 +1,6 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
+# FRONTEND
 # dependencies
 react-frontend/node_modules
 *.pnp
@@ -25,3 +26,6 @@ react-frontend/yarn-error.log*
 # cypress
 react-frontend/cypress/screenshots/
 react-frontend/cypress/videos/
+
+#BACKEND
+python_backend/.idea
