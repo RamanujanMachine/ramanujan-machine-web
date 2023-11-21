@@ -150,6 +150,7 @@ div.form.invalid button, div.form.invalid button:hover {
  	border-color: var(--neutral);
  	background-color: var(--neutral);
  	color: var(--light-text);
+	cursor: not-allowed;
 }
 input {
 	border-width: thin;

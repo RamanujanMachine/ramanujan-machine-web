@@ -23,6 +23,10 @@ describe('landing form', () => {
 		cy.get('input').first().parent().should('have.class', 'invalid');
 	});
 
+	it('sets the form as invalid if one of the polynomials is invalid', () => {
+		cy.get('div.form').first().should('have.class', 'invalid');
+	});
+
 	it('forces interation count to 10,000 if a larger value is entered', () => {
 		const iterationCount = '0000';
 		cy.get('input').eq(2).type(`${iterationCount}`);
