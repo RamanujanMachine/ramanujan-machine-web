@@ -3,7 +3,12 @@ import PolynomialInput from './PolynomialInput';
 
 function Form() {
 	const [iterationCount, setIterationCount] = React.useState(1000);
-
+	const [numeratorIsValid, setNumeratorValidity] = React.useState(false);
+	const [denominatorIsValid, setDenominatorValidity] = React.useState(false);
+	const [formClass, setFormClass] = React.useState('form');
+const formClassFn = () => {
+	return `${formClass} ${numeratorIsValid && denominatorIsValid ? '' : 'invalid'}`;
+}
 	let validateIterations = function (iterations: number) {
 		if (iterationCount > 10000) {
 			setIterationCount(10000);
@@ -16,7 +21,7 @@ function Form() {
 
 	return (
 		<div>
-			<div className="form">
+			<div className={formClassFn()}>
 				<p>
 					This is some temporary copy pulled from the web site. The simple continued fraction
 					expansion is an intriguing way of writing real numbers, which holds within it many
@@ -24,8 +29,8 @@ function Form() {
 					tendency to emerge in various places.{' '}
 				</p>
 
-				<PolynomialInput numerator={true}></PolynomialInput>
-				<PolynomialInput></PolynomialInput>
+				<PolynomialInput numerator={true} updateFormValidity={(fieldValidity: boolean) => setNumeratorValidity(fieldValidity)}></PolynomialInput>
+				<PolynomialInput updateFormValidity={(fieldValidity: boolean) => setDenominatorValidity(fieldValidity)}></PolynomialInput>
 				<div className="form-field">
 					<div>
 						<label>iterations</label>

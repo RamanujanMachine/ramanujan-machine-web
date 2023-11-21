@@ -22,26 +22,33 @@ div.body {
 	padding-top: 2rem;
 	width: 100%;
 	height: 100%;
+	background-color: var(--muted);
 }
 
-/* COLORS */
+/* colors and other universal defaults */
 :root {
-	--light: #d4dad6;
-	--dark: #03091c;
-	--primary: #a4da00;
-	--secondary: #45a324;
-	--info: #6cb6e7;
-	--accent1: #1b3855;
-	--accent2: #49788a;
-	--accent3: #9fb1b6;
-	--success: #2cb900;
-	--warning: #ffc732;
-	--danger: #fb0053;
 	--radius: 3px;
+
+	--dark-text: black;
+	--input-text: gray;
+	--light-text: white;
+/*
+	Alt Color Scheme
+	--neutral:#06283b;
+	--contrast: #7c9f24;
+	--bright:#6598c7;
+	--accent: #d2ced1;
+	--muted:#326229;
+*/
+	--contrast:#058fb2;
+	--accent: #f9ae33;
+	--muted:#47c7eb;
+	--neutral: #c8d9cd;
+	--bright:#527e4b;	
 }
 
 .header {
-	background-color: var(--dark);
+	background-color: var(--contrast);
 	margin-top: 0rem;
 	height: 8rem;
 	display: flex;
@@ -49,7 +56,7 @@ div.body {
 	align-items: center;
 	justify-content: center;
 	font-size: 3rem;
-	color: white;
+	color: var(--light-text);
 	background-size: cover;
 	position: relative;
 }
@@ -70,7 +77,7 @@ div.form {
 	margin-right: auto;
 	border-radius: var(--radius);
 	background-color: white;
-	filter: drop-shadow(var(--accent3) 1px 1px 0.2rem);
+	filter: drop-shadow(var(--contrast) 1px 1px 0.2rem);
 	opacity: 100%;
 }
 div.form p {
@@ -88,67 +95,76 @@ div.form-field {
 	text-align: left;
 }
 div.form-field.invalid {
-	color: var(--danger);
+	color: var(--accent);
 }
 div.form-field.invalid input {
-	border-color: var(--danger);
+	border-color: var(--accent);
 }
 div.form-field.invalid input:focus {
-	outline-color: var(--danger);
+	outline-color: var(--accent);
 }
 div.form-field label {
 	font-weight: 400;
 	margin-right: 1rem;
 	font-size: 1.2rem;
-	color: var(--accent2);
+	color: var(--dark-text);
 }
 div.form-field input {
 	padding: 0.5rem;
 	min-width: 240px;
 	font-size: 1rem;
-	color: var(--accent2);
-	outline-color: var(--accent2);
+	color: var(--input-text);
+	outline-color: var(--muted);
 	flex-grow: 1;
 }
 div.form-field input:focus {
-	border-color: var(--secondary);
-	outline-color: var(--secondary);
+	border-color: var(--muted);
+	outline-color: var(--muted);
 	outline-width: 2px;
 	border-width: 1px;
 }
 div.form-field input::placeholder {
-	color: var(--accent3);
+	color: var(--neutral);
 	font-size: 1rem;
 }
 button {
-	color: white;
+	color: var(--light-text);
 	font-size: 1.3rem;
 	padding: 0.5rem 0.9rem;
-	border-color: var(--secondary);
+	border-color: var(--muted);
 	border-width: thin;
 	border-style: solid;
 	width: fit-content;
-	background-color: var(--secondary);
+	background-color: var(--muted);
 	border-radius: var(--radius);
 	cursor: pointer;
 	margin-top: 1rem;
 	margin-left: auto;
 	margin-right: auto;
 }
+button:hover {
+	border-color: var(--accent);
+	background-color: var(--accent);
+}
+div.form.invalid button, div.form.invalid button:hover {
+ 	border-color: var(--neutral);
+ 	background-color: var(--neutral);
+ 	color: var(--light-text);
+}
 input {
 	border-width: thin;
 	border-radius: var(--radius);
-	border-color: var(--medium-color);
+	border-color: var(--muted);
 	padding: 2px 4px;
 	border-style: solid;
 	font-size: 0.8rem;
 }
 div.invalid input {
-	color: var(--contrast-color);
-	border-color: var(--contrast-color);
+	color: var(--bright);
+	border-color: var(--bright);
 }
 div.invalid label {
-	color: var(--contrast-color);
+	color: var(--bright);
 }
 div.link {
 	position: absolute;
@@ -157,7 +173,7 @@ div.link {
 	right: 0.5rem;
 }
 div.link a {
-	color: var(--accent3);
+	color: var(--contrast);
 	font-weight: bold;
 	text-decoration: unset;
 }
