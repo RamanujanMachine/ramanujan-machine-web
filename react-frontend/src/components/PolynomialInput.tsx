@@ -31,9 +31,9 @@ function PolynomialInput({ numerator = false, updateFormValidity }: { numerator?
 				value={polynomial}
 				onChange={(event) => {
 					setPolynomial(event.target.value);
+					validatePolynomial();
 				}}
 				placeholder="enter a polynomial"
-				onBlur={validatePolynomial}
 			/>
 		</div>
 	);
