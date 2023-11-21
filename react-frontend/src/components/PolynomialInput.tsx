@@ -5,7 +5,7 @@ function PolynomialInput({ numerator = false, updateFormValidity }: { numerator?
 	const [polynomial, setPolynomial] = React.useState('');
 	const [polyClass, setPolyClass] = React.useState('form-field');
 
-	let validatePolynomial = function () {
+	const validatePolynomial = function () {
 		if(polynomial.length == 0){
 			setPolyClass('form-field invalid');
 			updateFormValidity(false);

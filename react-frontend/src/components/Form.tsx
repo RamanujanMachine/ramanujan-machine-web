@@ -9,7 +9,7 @@ function Form() {
 const formClassFn = () => {
 	return `${formClass} ${numeratorIsValid && denominatorIsValid ? '' : 'invalid'}`;
 }
-	let validateIterations = function (iterations: number) {
+	const validateIterations = function (iterations: number) {
 		if (iterationCount > 10000) {
 			setIterationCount(10000);
 		}

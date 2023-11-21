@@ -1,7 +1,7 @@
 import React from 'react';
 
 function Charts({ iterationCount }: { iterationCount: number }) {
-	let analyze = function () {};
+	const analyze = function () {};
 
 	return <div></div>;
 }
