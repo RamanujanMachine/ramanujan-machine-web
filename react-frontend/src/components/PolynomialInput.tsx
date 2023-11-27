@@ -1,19 +1,25 @@
 import { parse } from 'mathjs';
 import React from 'react';
 
-function PolynomialInput({ numerator = false }: { numerator?: boolean }) {
+function PolynomialInput({ numerator = false, updateFormValidity }: { numerator?: boolean, updateFormValidity: (fieldValidity: boolean)=> void }) {
 	const [polynomial, setPolynomial] = React.useState('');
 	const [polyClass, setPolyClass] = React.useState('form-field');
 
-	let validatePolynomial = function () {
+	let validatePolynomial = function (poly: string) {
+		if(poly.length == 0) {
+			setPolyClass('form-field invalid');
+			updateFormValidity(false);
+		} else {
 		try {
-			let a = parse(polynomial);
+			let a = parse(poly);
 			a.compile();
 			setPolyClass('form-field');
+			updateFormValidity(true);
 		} catch (e) {
 			console.log(e);
 			setPolyClass('form-field invalid');
-		}
+			updateFormValidity(false);
+		}}
 	};
 
 	return (
@@ -25,9 +31,9 @@ function PolynomialInput({ numerator = false }: { numerator?: boolean }) {
 				value={polynomial}
 				onChange={(event) => {
 					setPolynomial(event.target.value);
+					validatePolynomial(event.target.value);
 				}}
 				placeholder="enter a polynomial"
-				onBlur={validatePolynomial}
 			/>
 		</div>
 	);
