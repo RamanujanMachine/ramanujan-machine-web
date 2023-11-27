@@ -28,4 +28,4 @@ react-frontend/cypress/screenshots/
 react-frontend/cypress/videos/
 
 #BACKEND
-python_backend/.idea
+.idea

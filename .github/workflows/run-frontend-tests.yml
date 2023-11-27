@@ -2,18 +2,35 @@ name: Commit Workflow
 on:
   push
 jobs:
+  audit-deps:
+    runs-on: ubuntu-latest
+    name: "Check Node Dependencies for Known Security Vulnerabilities"
+    steps:
+      - name: "Checkout repo"
+        uses: actions/checkout@v4
+      - name: "Run npm audit"
+        working-directory: ./react-frontend
+        run: npm audit --omit dev
+  check-unused-deps:
+    runs-on: ubuntu-latest
+    name: "Check for Unused Node Dependencies"
+    steps:
+      - name: "Checkout repo"
+        uses: actions/checkout@v4
+      - name: "Install dependency and run dependency check"
+        working-directory: ./react-frontend
+        run: npm install depcheck -g && depcheck --ignores "typescript,@types/node,eslint,prettier,jest,@types/jest"
   run-cypress-tests:
     runs-on: ubuntu-latest
-    name: Run Cypress Tests
+    name: "Run Cypress Tests"
     container:
       image: cypress/browsers:node18.12.0-chrome107
     steps:
-      - name: Checkout
+      - name: "Checkout repo"
         uses: actions/checkout@v4
-      - name: Run Cypress
+      - name: "Run Cypress tests"
         uses: cypress-io/github-action@v6
         with:
           working-directory: ./react-frontend
           build: npm run build
           start: npm start
-
