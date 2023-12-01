@@ -32,7 +32,7 @@ div.body {
 	--dark-text: black;
 	--input-text: gray;
 	--light-text: white;
-/*
+	/*
 	Alt Color Scheme
 	--neutral:#06283b;
 	--contrast: #7c9f24;
@@ -40,11 +40,11 @@ div.body {
 	--accent: #d2ced1;
 	--muted:#326229;
 */
-	--contrast:#058fb2;
+	--contrast: #058fb2;
 	--accent: #f9ae33;
-	--muted:#47c7eb;
+	--muted: #47c7eb;
 	--neutral: #c8d9cd;
-	--bright:#527e4b;	
+	--bright: #527e4b;
 }
 
 .header {
@@ -64,10 +64,10 @@ div.subheading {
 	font-size: 1rem;
 }
 
-div.form {
+.form {
 	display: flex;
 	flex-direction: column;
-	align-items: left;
+	align-items: center;
 	justify-content: space-between;
 	padding: 1.2rem;
 	text-align: left;
@@ -80,7 +80,10 @@ div.form {
 	filter: drop-shadow(var(--contrast) 1px 1px 0.2rem);
 	opacity: 100%;
 }
-div.form p {
+form > div {
+	display: grid;
+}
+.form p {
 	font-size: 1rem;
 	padding: 1rem;
 	margin-block-start: 0rem;
@@ -146,10 +149,11 @@ button:hover {
 	border-color: var(--accent);
 	background-color: var(--accent);
 }
-div.form.invalid button, div.form.invalid button:hover {
- 	border-color: var(--neutral);
- 	background-color: var(--neutral);
- 	color: var(--light-text);
+.form.invalid button,
+.form.invalid button:hover {
+	border-color: var(--neutral);
+	background-color: var(--neutral);
+	color: var(--light-text);
 	cursor: not-allowed;
 }
 input {
@@ -177,4 +181,35 @@ div.link a {
 	color: var(--contrast);
 	font-weight: bold;
 	text-decoration: unset;
+}
+img {
+	margin-left: auto;
+	margin-right: auto;
+}
+.error-message {
+	color: var(--accent);
+	height: max-content;
+	font-weight: bold;
+	font-size: 1rem;
+	width: 100%;
+	padding: 4px;
+	margin-left: 38px;
+}
+.hidden {
+	display: none;
+	visibility: hidden;
+}
+@keyframes fadein {
+	from {
+		opacity: 0;
+	}
+
+	to {
+		opacity: 1;
+	}
+}
+.fade-in {
+	animation-duration: 1s;
+	animation-name: fadein;
+	animation-iteration-count: 1;
 }

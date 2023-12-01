@@ -1,7 +1,5 @@
-/** @type {import('jest').Config} */
-const config = {
-	verbose: true,
-	moduleFileExtensions: ['ts', 'tsx']
+/** @type {import('ts-jest').JestConfigWithTsJest} */
+module.exports = {
+	preset: 'ts-jest',
+	testEnvironment: 'node'
 };
-
-module.exports = config;
