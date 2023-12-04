@@ -64,8 +64,10 @@ div.subheading {
 	font-size: 1rem;
 }
 
+/* form component */
 .form {
 	display: flex;
+	backface-visibility: hidden;
 	flex-direction: column;
 	align-items: center;
 	justify-content: space-between;
@@ -212,4 +214,23 @@ img {
 	animation-duration: 1s;
 	animation-name: fadein;
 	animation-iteration-count: 1;
+}
+
+/* chart component */
+div.chart-container {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: space-between;
+	backface-visibility: hidden;
+	padding: 1.2rem;
+	text-align: left;
+	font-size: 1.3rem;
+	width: 500px;
+	margin-left: auto;
+	margin-right: auto;
+	border-radius: var(--radius);
+	background-color: white;
+	filter: drop-shadow(var(--contrast) 1px 1px 0.2rem);
+	opacity: 100%;
 }
