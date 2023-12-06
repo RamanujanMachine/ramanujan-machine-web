@@ -1,15 +1,18 @@
+/* eslint-disable no-unused-vars */
 import { parse } from 'mathjs';
 import React from 'react';
+
+interface PolynomialInputProps {
+	numerator?: boolean;
+	updateFormValidity: (isValid: boolean) => void;
+	updatePolynomial: (polynomial: string) => void;
+}
 
 function PolynomialInput({
 	numerator = false,
 	updateFormValidity,
 	updatePolynomial
-}: {
-	numerator?: boolean;
-	updateFormValidity: (isValid: boolean) => void;
-	updatePolynomial: (polynomial: string) => void;
-}) {
+}: PolynomialInputProps) {
 	const [localPoly, setLocalPoly] = React.useState('');
 	const [polyClass, setPolyClass] = React.useState('form-field');
 	const [errorMessage, setErrorMessage] = React.useState('');
