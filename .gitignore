@@ -19,6 +19,10 @@ react-frontend/build
 .env.test.local
 .env.production.local
 
+# static analysis results
+.scannerwork
+
+# node package debug logs
 react-frontend/npm-debug.log*
 react-frontend/yarn-debug.log*
 react-frontend/yarn-error.log*
