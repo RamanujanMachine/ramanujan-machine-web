@@ -20,7 +20,7 @@ logger = logger.config()
 
 PRECISION = constants.PRECISION
 
-origins = ["http://localhost:5173", "localhost:5173"]
+origins = ["http://localhost:5173", "127.0.0.1:5173"]
 
 # Only allow traffic from localhost and restrict methods to those we intend to use
 app.add_middleware(CORSMiddleware,
@@ -37,10 +37,11 @@ async def analyze(request: Request):
     :return: HTTP response indicating success of parsing inputs with a 200 or a 500 to indicate failure parsing inputs
     """
     # parse posted body as Input
-    data = Input(**(await request.json()))
 
     mpmath.mp.dps = PRECISION
+
     try:
+        data = Input(**(await request.json()))
         x = Symbol(data.symbol, real=True)
         p = sympify(convert(data.p), {data.symbol: x})
         q = sympify(convert(data.q), {data.symbol: x})
@@ -57,7 +58,7 @@ async def analyze(request: Request):
             "denominator_limit": json.dumps(float(q_limit)),
             "log_error": json.dumps(math_utils.error_coordinates(simple, x, limit)),
             "delta": json.dumps(math_utils.delta_coordinates(simple, simple_q, x, limit)),
-            "computed_value": json.dumps(float(limit)) # @TODO: replace with actual computation to i
+            "computed_value": json.dumps(float(limit))  # @TODO: replace with actual computation to i
         }
 
         response = JSONResponse(content=body)

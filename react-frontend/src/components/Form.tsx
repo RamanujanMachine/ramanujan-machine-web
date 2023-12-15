@@ -23,10 +23,23 @@ function Form() {
 		document.getElementsByTagName('input')[0].focus();
 	}, []);
 
+	const onlyOneSymbolUsed = function () {
+		const matches = (polynomialA + polynomialB).matchAll(/([a-zA-Z])/g);
+		const distinctCharacters = new Set();
+		for (const match of matches) {
+			distinctCharacters.add(match[0]);
+		}
+		return distinctCharacters.size <= 1;
+	};
+
+	const errorClassFn = () => {
+		return `error-message ${onlyOneSymbolUsed() ? 'hidden' : ''}`;
+	};
+
 	const formClassFn = () => {
-		return `form ${numeratorIsValid && denominatorIsValid ? '' : 'invalid'} ${
-			showCharts ? 'hidden' : ''
-		}`;
+		return `form ${
+			numeratorIsValid && denominatorIsValid && onlyOneSymbolUsed() ? '' : 'invalid'
+		} ${showCharts ? 'hidden' : ''}`;
 	};
 
 	const validateIterations = function (iterations: number) {
@@ -43,8 +56,9 @@ function Form() {
 			symbol: polynomialA.match(/([a-zA-Z])/)?.[0],
 			i: iterationCount
 		};
+		console.log(body);
 		axios
-			.post('http://localhost:8000/analyze', body)
+			.post('http://127.0.0.1:8000/analyze', body)
 			.then((response) => {
 				if (response.status == 200) {
 					setResults(response.data);
@@ -93,6 +107,7 @@ function Form() {
 						updatePolynomial={(polynomial: string) => {
 							setPolynomialB(polynomial);
 						}}></PolynomialInput>
+					<div className={errorClassFn()}>Please limit your polynomials to one variable</div>
 					<div className="form-field">
 						<div>
 							<label>&nbsp;n&nbsp;</label>
