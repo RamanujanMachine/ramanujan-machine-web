@@ -36,6 +36,8 @@ jobs:
         working-directory: ./python-backend
         run: |
             python -m pip install --upgrade pip 
+            pip install -r requirements.txt
+            uvicorn main:app
       - name: "Run Cypress end-to-end tests"
         uses: cypress-io/github-action@v6
         with:
