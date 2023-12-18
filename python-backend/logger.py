@@ -5,7 +5,11 @@ FORMAT = (
     'message)s\nStack: %(stack_info)s')
 
 
-def config():
+def config() -> logging.Logger:
+    """
+    Set up a file logger and a console logger
+    :return: configured logger for the web server
+    """
     logger = logging.getLogger('rm_web_app')
     logger.setLevel(logging.DEBUG)
 

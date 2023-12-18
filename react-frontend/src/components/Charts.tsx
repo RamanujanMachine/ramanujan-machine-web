@@ -58,8 +58,12 @@ function Charts({ results = {}, toggleDisplay }: ChartProps) {
 			<p>The rate of convergence for this Polynomial Continued Fraction (in digits per step): </p>
 			<Line datasetIdKey="id" data={computePairs('log_error')} options={chartOptions} />
 			<p>
-				Delta is a measure of the irrationality of a number (read more about it here). The given
-				Polynomial Continued Fraction produces the following finite-depth estimations for Delta:
+				Delta is a measure of the irrationality of a number (read more about it{' '}
+				<a href="https://www.ramanujanmachine.com/the-mathematics-of-polynomial-continued-fractions/irrationality-testing/">
+					here
+				</a>
+				). The given Polynomial Continued Fraction produces the following finite-depth estimations
+				for Delta:
 			</p>
 			<Line datasetIdKey="id" data={computePairs('delta')} options={chartOptions} />
 			<button

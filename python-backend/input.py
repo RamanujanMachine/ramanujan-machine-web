@@ -11,7 +11,7 @@ class Input(BaseModel):
     symbol: str
 
 
-def convert(polynomial: str):
+def convert(polynomial: str) -> str:
     """
     Take an acceptable math polynomial entered by a user and convert to one that Python can parse
     :param polynomial: incoming polynomial entered by user in web frontend
