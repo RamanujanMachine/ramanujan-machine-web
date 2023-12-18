@@ -179,7 +179,14 @@ div.link {
 	bottom: 0.3rem;
 	right: 0.5rem;
 }
-div.link a {
+a,
+a:visited {
+	color: var(--contrast);
+	font-weight: bold;
+	text-decoration: unset;
+}
+div.link a,
+div.link a:visited {
 	color: var(--contrast);
 	font-weight: bold;
 	text-decoration: unset;

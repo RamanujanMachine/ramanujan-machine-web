@@ -21,12 +21,14 @@ function PolynomialInput({
 	const MAX_INPUT_LENGTH = 100;
 
 	const valid = function () {
+		setErrorMessage('');
 		setErrorClass('error-message hidden');
 		setPolyClass('form-field');
 		updateFormValidity(true);
 	};
 
-	const invalid = function () {
+	const invalid = function (errorMessage = '') {
+		setErrorMessage(errorMessage);
 		setErrorClass('error-message fade-in');
 		setPolyClass('form-field invalid');
 		updateFormValidity(false);
@@ -37,14 +39,29 @@ function PolynomialInput({
 		return input.replaceAll(/[^^()a-zA-Z0-9*./ +-]*/g, '');
 	};
 
+	const onlyOneSymbol = function (input: string) {
+		const matches = input.matchAll(/([a-zA-Z])/g);
+		const distinctCharacters = new Set();
+		for (const match of matches) {
+			distinctCharacters.add(match[0]);
+		}
+		return distinctCharacters.size <= 1;
+	};
+
 	const validatePolynomial = function (p: string) {
 		if (p.length == 0) {
-			invalid();
-			setErrorMessage('A value is required');
+			// validate non-empty
+			invalid('A value is required');
 			setLocalPoly(p);
 		} else if (p.length > MAX_INPUT_LENGTH) {
+			// validate length
 			setLocalPoly(p.substring(0, MAX_INPUT_LENGTH));
+		} else if (!onlyOneSymbol(p)) {
+			// validate that there is only one variable in use
+			invalid('Please limit to one variable');
+			setLocalPoly(p);
 		} else {
+			// strip extraneous special characters
 			let clean = sanitize(p);
 			if (clean !== p) {
 				setLocalPoly(clean);
@@ -52,11 +69,9 @@ function PolynomialInput({
 				setLocalPoly(p);
 				try {
 					parse(p);
-					setErrorMessage('');
 					valid();
 				} catch (e) {
-					setErrorMessage(e!.toString());
-					invalid();
+					invalid(e!.toString());
 				}
 			}
 		}
@@ -66,7 +81,8 @@ function PolynomialInput({
 		<div>
 			<div className={polyClass}>
 				<label>
-					<i>{numerator ? 'p' : 'q'}</i>{' '}
+					{numerator ? 'a' : 'b'}
+					<sub>n</sub>
 				</label>
 				<input
 					value={localPoly}

@@ -3,9 +3,10 @@
 describe('landing form', () => {
 	beforeEach(() => {
 		cy.visit('http://localhost:5173');
+		cy.viewport('macbook-11');
 	});
 
-	const invalidInput = `4..`;
+	const invalidMathInput = `4..`;
 
 	it('displays two input fields for polynomials and one for iterations', () => {
 		cy.get('input').should('have.length', 3);
@@ -19,16 +20,35 @@ describe('landing form', () => {
 	});
 
 	it('validates math expressions', () => {
-		cy.get('input').first().type(invalidInput);
+		cy.get('input').first().type(invalidMathInput);
 		cy.get('input').first().blur();
+		cy.wait(1000);
 		cy.get('input').first().parent().should('have.class', 'invalid');
 	});
 
 	it('should display an error message when an input is invalid', () => {
 		cy.get('div.error-message').should('not.be.visible');
-		cy.get('input').first().type(invalidInput);
+		cy.get('input').first().type(invalidMathInput);
 		cy.get('input').first().blur();
+		cy.wait(1000);
 		cy.get('div.error-message').should('be.visible');
+	});
+
+	it('should display an error message when an input contains more than one variable', () => {
+		cy.get('div.error-message').should('not.be.visible');
+		cy.get('input').first().type('4x-3y+1');
+		cy.get('input').first().blur();
+		cy.wait(1000);
+		cy.get('div.error-message').should('be.visible');
+	});
+
+	it('should display an error message when the inputs combined contain more than one variable', () => {
+		cy.get('div.error-message').should('not.be.visible');
+		cy.get('input').first().type('4x^2-1');
+		cy.get('input').eq(1).type('3y^4-2y');
+		cy.get('input').eq(1).blur();
+		cy.wait(1000);
+		cy.get('div.error-message').eq(2).should('be.visible');
 	});
 
 	it('strips characters not used in math expressions', () => {
@@ -36,6 +56,7 @@ describe('landing form', () => {
 		`;
 		cy.get('input').first().type(`${newPolynomial}`);
 		cy.get('input').first().blur();
+		cy.wait(1000);
 		cy.get('input').first().should('have.value', '4+1');
 	});
 
@@ -43,6 +64,7 @@ describe('landing form', () => {
 		const newPolynomial = '<script>console.log("hello")</script>';
 		cy.get('input').first().type(`${newPolynomial}`);
 		cy.get('input').first().blur();
+		cy.wait(1000);
 		cy.get('input').first().should('not.contain', '<script>');
 		cy.get('input').first().should('not.contain', '</script>');
 	});
@@ -55,6 +77,7 @@ describe('landing form', () => {
 		const iterationCount = '0000';
 		cy.get('input').eq(2).type(`${iterationCount}`);
 		cy.get('input').eq(2).blur();
+		cy.wait(1000);
 		cy.get('input').eq(2).should('have.value', '10000');
 	});
 });

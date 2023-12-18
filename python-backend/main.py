@@ -1,21 +1,26 @@
 import json
-import re
 import uuid
 
-import requests
+import mpmath
+import sympy
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
-from sympy import simplify, sympify
-from sympy.abc import _clash1
+from sympy import simplify, sympify, oo, Symbol
 
-from secrets import Secrets
+import constants
+import logger
+import math_utils
+from input import Input, convert
 from wolfram_client import WolframClient
 
 app = FastAPI()
 
-origins = ["http://localhost:5173", "localhost:5173"]
+logger = logger.config()
+
+PRECISION = constants.PRECISION
+
+origins = ["http://localhost:5173", "127.0.0.1:5173"]
 
 # Only allow traffic from localhost and restrict methods to those we intend to use
 app.add_middleware(CORSMiddleware,
@@ -25,40 +30,42 @@ app.add_middleware(CORSMiddleware,
                    allow_headers=["*"])
 
 
-# The structure of the post body from the frontend
-class Input(BaseModel):
-    p: str
-    q: str
-    i: int
-
-
-def convert(polynomial: str):
-    """
-    Take an acceptable math polynomial entered by a user and convert to one that Python can parse
-    :param polynomial: incoming polynomial entered by user in web frontend
-    :return: python parse-able polynomial
-    """
-    return re.sub(r'([0-9.-])+([a-zA-Z])', '\\1*\\2', polynomial.replace('^', '**'))
-
-
 @app.post("/analyze")
 async def analyze(request: Request):
     """
-
     :param request: HTTP request
     :return: HTTP response indicating success of parsing inputs with a 200 or a 500 to indicate failure parsing inputs
     """
     # parse posted body as Input
-    data = Input(**(await request.json()))
 
-    # convert to math expression
+    mpmath.mp.dps = PRECISION
+
     try:
-        expression = sympify(convert(data.p), _clash1) / sympify(convert(data.q), _clash1)
-        simple = str(simplify(expression))
-        response = JSONResponse(content=WolframClient.limit(simple))
+        data = Input(**(await request.json()))
+        x = Symbol(data.symbol, real=True)
+        p = sympify(convert(data.p), {data.symbol: x})
+        q = sympify(convert(data.q), {data.symbol: x})
+        simple_q = simplify(q)
+        expression = p / simple_q
+        simple = simplify(expression)
+
+        q_limit = sympy.limit(simple_q, x, oo)
+        limit = sympy.limit(simple, x, oo)
+
+        body = {
+            "wolfram_limit": WolframClient.limit(str(simple)),
+            "limit": json.dumps(float(limit)),
+            "denominator_limit": json.dumps(float(q_limit)),
+            "log_error": json.dumps(math_utils.error_coordinates(simple, x, limit)),
+            "delta": json.dumps(math_utils.delta_coordinates(simple, simple_q, x, limit)),
+            "computed_value": json.dumps(float(limit))  # @TODO: replace with actual computation to i
+        }
+
+        response = JSONResponse(content=body)
         response.set_cookie(key="trm", value=str(uuid.uuid4()))
         return response
+
     except Exception as e:
-        print("p/q error", e)
+        logger.warning(e)
         response = JSONResponse(status_code=500, content={"error": "Failed to parse p / q"})
         return response

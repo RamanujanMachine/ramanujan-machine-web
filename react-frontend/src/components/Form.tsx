@@ -3,6 +3,13 @@ import React, { useEffect, useState } from 'react';
 import PolynomialInput from './PolynomialInput';
 import Charts from './Charts';
 
+interface PostBody {
+	p: string;
+	q: string;
+	symbol: string | undefined;
+	i: number;
+}
+
 function Form() {
 	const [iterationCount, setIterationCount] = useState(1000);
 	const [numeratorIsValid, setNumeratorValidity] = useState(false);
@@ -16,10 +23,23 @@ function Form() {
 		document.getElementsByTagName('input')[0].focus();
 	}, []);
 
+	const onlyOneSymbolUsed = function () {
+		const matches = (polynomialA + polynomialB).matchAll(/([a-zA-Z])/g);
+		const distinctCharacters = new Set();
+		for (const match of matches) {
+			distinctCharacters.add(match[0]);
+		}
+		return distinctCharacters.size <= 1;
+	};
+
+	const errorClassFn = () => {
+		return `error-message ${onlyOneSymbolUsed() ? 'hidden' : ''}`;
+	};
+
 	const formClassFn = () => {
-		return `form ${numeratorIsValid && denominatorIsValid ? '' : 'invalid'} ${
-			showCharts ? 'hidden' : ''
-		}`;
+		return `form ${
+			numeratorIsValid && denominatorIsValid && onlyOneSymbolUsed() ? '' : 'invalid'
+		} ${showCharts ? 'hidden' : ''}`;
 	};
 
 	const validateIterations = function (iterations: number) {
@@ -30,17 +50,18 @@ function Form() {
 
 	const submit = (e: any) => {
 		e.preventDefault();
+		const body: PostBody = {
+			p: polynomialA,
+			q: polynomialB,
+			symbol: polynomialA.match(/([a-zA-Z])/)?.[0],
+			i: iterationCount
+		};
+		console.log(body);
 		axios
-			.post('http://localhost:8000/analyze', {
-				p: polynomialA,
-				q: polynomialB,
-				i: iterationCount
-			})
+			.post('http://127.0.0.1:8000/analyze', body)
 			.then((response) => {
 				if (response.status == 200) {
-					// @TODO: later will setResults(response.data);
-					const list = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
-					setResults(list);
+					setResults(response.data);
 					setShowCharts(true);
 				} else {
 					setShowCharts(false);
@@ -66,7 +87,7 @@ function Form() {
 						</sub>{' '}
 						polynomials below. They will define a continued fraction of the form:
 					</p>
-					<img src="pcf.svg" alt="polynomial continued fraction template pretty printed" />
+					<img src="pcf.png" alt="polynomial continued fraction template pretty printed" />
 					<p>
 						Which will then be calculated up to depth <i>n</i>.
 					</p>
@@ -86,11 +107,10 @@ function Form() {
 						updatePolynomial={(polynomial: string) => {
 							setPolynomialB(polynomial);
 						}}></PolynomialInput>
+					<div className={errorClassFn()}>Please limit your polynomials to one variable</div>
 					<div className="form-field">
 						<div>
-							<label>
-								<i>n</i>
-							</label>
+							<label>&nbsp;n&nbsp;</label>
 						</div>
 						<div>
 							<input
