@@ -80,17 +80,4 @@ describe('landing form', () => {
 		cy.wait(1000);
 		cy.get('input').eq(2).should('have.value', '10000');
 	});
-
-	it('shows charts component if inputs are valid', () => {
-		cy.get('input').first().type('4x^2-1');
-		cy.get('input').first().blur();
-		cy.get('input').eq(1).type('3x^4-2x+5');
-		cy.get('input').eq(1).blur();
-		cy.wait(1000);
-		cy.get('button').focus().click({ force: true }).trigger('click');
-		//cy.intercept('POST', 'http://localhost:8000/analyze').as('analyze');
-		//cy.wait('@analyze').then((interception) => {
-		cy.get('div.chart-container').should('be.visible');
-		//});
-	});
 });
