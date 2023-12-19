@@ -43,13 +43,10 @@ class WolframClient:
             try:
                 result = json.loads(result.content)
                 try:
-                    result["queryresult"]["error"]["code"]
+                    raise APIError(result["queryresult"]["error"]["msg"])
                 except (AttributeError, TypeError):
                     # if the key does not exist or is false then the api call was successful
                     pass
-                else:
-                    raise APIError(result["queryresult"]["error"]["msg"])
-                print("TYPE = {}", type(result))
                 return result
             except JSONDecodeError as e:
                 logger.error("Failed to parse Wolfram API result", e)
