@@ -1,10 +1,11 @@
-# The structure of the post body from the frontend
+""" Processing of the post body from the frontend """
 import re
 
 from pydantic import BaseModel
 
 
 class Input(BaseModel):
+    """Structure of user form data"""
     p: str
     q: str
     i: int

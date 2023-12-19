@@ -1,8 +1,13 @@
+"""
+Specific queries to the Wolfram results API and a generic ask() function to invoke the API
+"""
 import json
 import logging
+from json import JSONDecodeError
 
 import requests
 
+from custom_exceptions import APIError
 from secrets import Secrets
 
 logger = logging.getLogger('rm_web_app')
@@ -36,8 +41,14 @@ class WolframClient:
             logger.error("Wolfram API returned error", e)
         else:
             try:
-                return json.loads(result.content)
-            except Exception as e:
+                result = json.loads(result.content)
+                try:
+                    raise APIError(result["queryresult"]["error"]["msg"])
+                except (AttributeError, TypeError):
+                    # if the key does not exist or is false then the api call was successful
+                    pass
+                return result
+            except JSONDecodeError as e:
                 logger.error("Failed to parse Wolfram API result", e)
 
     @staticmethod
@@ -50,9 +61,10 @@ class WolframClient:
         try:
             result = WolframClient.ask(query="limit of {}".format(expression), include_pod="Limit")
             # only want to return: queryresult -> pods[0] -> subpods
+
             return result["queryresult"]["pods"][0]["subpods"]
         except Exception as e:
-            logger.error("Failed to parse Wolfram API result", e)
+            logger.error("Failed to obtain Wolfram API result", e)
 
     @staticmethod
     def continued_fraction(expression: str) -> str:
@@ -66,4 +78,4 @@ class WolframClient:
             # only want to return: queryresult -> pods[0] -> subpods
             return result["queryresult"]["pods"][0]["subpods"]
         except Exception as e:
-            logger.error("Failed to parse Wolfram API result", e)
+            logger.error("Failed to obtain Wolfram API result", e)

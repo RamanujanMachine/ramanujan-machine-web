@@ -1,3 +1,4 @@
+"""A place to keep secrets"""
 import os
 from dataclasses import dataclass
 
@@ -9,6 +10,6 @@ load_dotenv(find_dotenv())
 @dataclass(frozen=True)
 class Secrets:
     """
-    A place to consolidate secrets
+    Secrets container
     """
     WolframAppId: str = os.getenv('WOLFRAM_APP_ID')
