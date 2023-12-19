@@ -1,3 +1,4 @@
+"""Entrypoint for the application and REST API handlers"""
 import json
 import uuid
 
