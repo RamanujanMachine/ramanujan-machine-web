@@ -58,7 +58,7 @@ function Form() {
 		};
 		console.log(body);
 		axios
-			.post('http://127.0.0.1:8000/analyze', body)
+			.post('http://localhost:8000/analyze', body)
 			.then((response) => {
 				if (response.status == 200) {
 					setResults(response.data);

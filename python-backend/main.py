@@ -11,7 +11,7 @@ from sympy import simplify, sympify, oo, Symbol
 
 import constants
 import logger
-import math_utils
+from graph_utils import error_coordinates, delta_coordinates
 from input import Input, convert
 from wolfram_client import WolframClient
 
@@ -57,8 +57,8 @@ async def analyze(request: Request):
             "wolfram_limit": WolframClient.limit(str(simple)),
             "limit": json.dumps(float(limit)),
             "denominator_limit": json.dumps(float(q_limit)),
-            "log_error": json.dumps(math_utils.error_coordinates(simple, x, limit)),
-            "delta": json.dumps(math_utils.delta_coordinates(simple, simple_q, x, limit)),
+            "log_error": json.dumps(error_coordinates(simple, x, limit)),
+            "delta": json.dumps(delta_coordinates(simple, simple_q, x, limit)),
             "computed_value": json.dumps(float(limit))  # @TODO: replace with actual computation to i
         }
 
