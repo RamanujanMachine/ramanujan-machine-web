@@ -1,33 +1,41 @@
 # syntax=docker/dockerfile:1
 # This docker container runs the web portal
-# Slim Linux image
-FROM alpine:latest
+FROM ubuntu:latest
 LABEL description="Ramanujan Machine Web Portal"
 
 # set working directory
 WORKDIR /srv/ramanujan-machine-portal
 
 # install node
-RUN apk update && apk add nodejs npm
+RUN apt-get update && apt-get -y install python3 python3-pip ca-certificates curl gnupg
 
-COPY ./react-frontend/package.json ./	 
-COPY ./react-frontend/package-lock.json ./	 
-COPY ./react-frontend/tsconfig.json ./	 
+RUN mkdir -p /etc/apt/keyrings
+RUN curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+ENV NODE_MAJOR=20
+RUN echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_MAJOR.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list
+
+RUN apt-get update && apt-get -y install nodejs
+
+COPY ./react-frontend ./	 
 
 # install node package dependencies
-RUN npm ci
+RUN npm install
 
-# Copy project files  
-COPY ./react-frontend/src ./src
-COPY ./react-frontend/public ./public
-
-# Build project
+# Build frontend project
 RUN npm run build
 
-# remove dev dependencies	 
-RUN npm prune --production
-# RUN npm install -g serve
+# copy API files
+COPY ./python-backend/Pipfile* ./
+COPY ./python-backend/*.py ./
+COPY ./python-backend/requirements.txt ./
 
-EXPOSE 3000
-#ENTRYPOINT ["serve", "-s", "build"]
-ENTRYPOINT ["npm", "run", "start"]
+# install Python dependencies
+RUN pip3 install -r requirements.txt
+RUN pip3 install uvicorn
+
+EXPOSE 5173
+EXPOSE 8000
+
+COPY docker_start.sh docker_start.sh
+RUN chmod +x docker_start.sh
+CMD ./docker_start.sh
