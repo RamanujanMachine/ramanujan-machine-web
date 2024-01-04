@@ -16,8 +16,8 @@ def error_coordinates(expression: sympy.core, symbol: Symbol, limit: sympy.core.
     :param limit: the computed limit of the expression as it goes to infinity
     :return: array of [x,y] pairs for graphing purposes
     """
-    return [[val, float(math_utils.error(expression, symbol, limit, val))] for val in X_VALUES if
-            type(math_utils.error(expression, symbol, limit, val)) in GRAPHABLE_TYPES]
+    y_values = [math_utils.error(expression, symbol, limit, val) for val in X_VALUES]
+    return [[x, float(y)] for x, y in zip(X_VALUES, y_values) if type(y) in GRAPHABLE_TYPES]
 
 
 def delta_coordinates(expression: sympy.core,
@@ -33,5 +33,5 @@ def delta_coordinates(expression: sympy.core,
     :return: array of [x,y] pairs for graphing purposes
     """
     # graph coords of error delta: -1 * (log(|Pn/Qn - L|) / log(Qn)) - 1
-    return [[val, -1 * float(math_utils.delta(expression, denominator, symbol, limit, val))] for val in X_VALUES if
-            type(-1 * float(math_utils.delta(expression, denominator, symbol, limit, val))) in GRAPHABLE_TYPES]
+    y_values = [-1 * math_utils.delta(expression, denominator, symbol, limit, val) for val in X_VALUES]
+    return [[x, float(y)] for x, y in zip(X_VALUES, y_values) if type(y) in GRAPHABLE_TYPES]

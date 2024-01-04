@@ -7,7 +7,7 @@ Ensure that you have all project dependencies installed using `npm ci` or `npm i
 #### `npm start`
 
 Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+Open [http://localhost:5137](http://localhost:5137) to view it in the browser.
 
 #### `npx cypress run`
 

@@ -1,3 +1,4 @@
+import axios from 'axios';
 import React from 'react';
 import { CategoryScale, Chart, Legend, LinearScale, LineElement, PointElement } from 'chart.js';
 import { Line } from 'react-chartjs-2';
@@ -30,8 +31,10 @@ const labels: { [key: string]: string } = {
 };
 
 Chart.register(CategoryScale, Legend, LinearScale, LineElement, PointElement);
+
 function Charts({ results = {}, toggleDisplay }: ChartProps) {
-	const computePairs = (dataset: string) => {
+	const computePairs = (dataset: string) => { 
+		checkResult();
 		return {
 			labels: range(0, 1000, 25),
 			datasets: [
@@ -45,6 +48,17 @@ function Charts({ results = {}, toggleDisplay }: ChartProps) {
 			]
 		};
 	};
+	const checkResult = function() {
+	axios.post('http://localhost:8000/verify', {expression: results.expression})
+			.then((response) => {
+				if (response.status == 200) {
+					console.log('success');
+				} else {
+					console.warn(response.data.error);
+				}
+			})
+			.catch((error) => console.log(error));
+		}
 	return (
 		<div className="chart-container">
 			<p>This is the value of the Polynomial Continued Fraction: {results.computed_value}</p>

@@ -36,7 +36,7 @@ function PolynomialInput({
 
 	const sanitize = function (input: string) {
 		// replace all characters that are not valid math expression characters
-		return input.replaceAll(/[^^()a-zA-Z0-9*./ +-]*/g, '');
+		return input.replaceAll(/[^^()a-zA-Z0-9* ./+-]+/g, '');
 	};
 
 	const onlyOneSymbol = function (input: string) {

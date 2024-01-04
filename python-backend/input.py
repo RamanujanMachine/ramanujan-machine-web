@@ -1,7 +1,10 @@
 """ Processing of the post body from the frontend """
+import logging
 import re
 
 from pydantic import BaseModel
+
+logger = logging.getLogger('rm_web_app')
 
 
 class Input(BaseModel):
@@ -18,4 +21,13 @@ def convert(polynomial: str) -> str:
     :param polynomial: incoming polynomial entered by user in web frontend
     :return: python parse-able polynomial
     """
-    return re.sub(r'([0-9])+([a-zA-Z])', '\\1*\\2', polynomial.replace('^', '**'))
+    expression = re.sub(r'([0-9]+)([a-zA-Z])', '\\1*\\2',
+                        polynomial.replace('^', '**').replace(' ', '').replace(')(', ')*('))
+    expression = re.sub(r'([0-9a-zA-Z])(\()', '\\1*\\2', expression)
+    logger.debug(f"input: {polynomial} output: {expression}")
+    return expression
+
+
+class Expression(BaseModel):
+    """Structure of user form data"""
+    expression: str

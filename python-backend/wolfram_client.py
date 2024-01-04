@@ -61,8 +61,21 @@ class WolframClient:
         try:
             result = WolframClient.ask(query="limit of {}".format(expression), include_pod="Limit")
             # only want to return: queryresult -> pods[0] -> subpods
-
             return result["queryresult"]["pods"][0]["subpods"]
+        except Exception as e:
+            logger.error("Failed to obtain Wolfram API result", e)
+
+    @staticmethod
+    def raw(expression: str) -> str:
+        """
+        Query the Wolfram results API with a string expression
+        :param expression: Mathematical expression for which we would like to get more information
+        :return: Wolfram API response
+        """
+        try:
+            result = WolframClient.ask(query=f"{expression}")
+            # just pass the result through
+            return result["queryresult"]
         except Exception as e:
             logger.error("Failed to obtain Wolfram API result", e)
 
