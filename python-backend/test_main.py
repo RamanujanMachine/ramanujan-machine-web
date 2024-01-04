@@ -18,7 +18,7 @@ TEST_INPUT_3 = "4x^2+3x^5-1"
 CONVERSION_3 = "4*x**2+3*x**5-1"
 SYMPY_3 = "3*x**5+4*x**2-1"
 TEST_INPUT_4 = "4x^2 + 3x^5 - 1"
-CONVERSION_4 = "4*x**2 + 3*x**5 - 1"
+CONVERSION_4 = "4*x**2+3*x**5-1"
 SYMPY_4 = "3*x**5+4*x**2-1"
 TEST_INPUT_5 = "2x^2"
 TEST_INPUT_6 = "x"
@@ -29,6 +29,8 @@ SIMPLIFIED_7_8 = "6*x + 2"
 SYMBOL = Symbol('x', real=True)
 P = "4*x**2"
 Q = "5*x**3-6*x**2+2"
+TEST_INPUT_9 = "(1 + 2 n) (5 + 17 n (1 + n))"
+CONVERSION_10 = "(1+2*n)*(5+17*n*(1+n))"
 
 
 def test_convert() -> None:
@@ -37,6 +39,7 @@ def test_convert() -> None:
     assert convert(TEST_INPUT_2) == CONVERSION_2
     assert convert(TEST_INPUT_3) == CONVERSION_3
     assert convert(TEST_INPUT_4) == CONVERSION_4
+    assert convert(TEST_INPUT_9) == CONVERSION_10
 
 
 def test_sympify() -> None:

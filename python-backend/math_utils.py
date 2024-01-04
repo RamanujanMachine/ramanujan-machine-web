@@ -1,10 +1,14 @@
 """Utility functions that perform mathematical operations with preset parameters"""
+import logging
+
 import sympy
 from sympy import Symbol
 
 import constants
 
 PRECISION = constants.PRECISION
+
+logger = logging.getLogger('rm_web_app')
 
 
 def error(expression: sympy.core, symbol: Symbol, limit: sympy.core.numbers, val: int) -> sympy.core.numbers:
@@ -44,4 +48,4 @@ def delta(expression: sympy.core,
     :param val: the x value and the value to substitute in for the symbol in the expression
     :return: the delta or y coordinate at the val provided
     """
-    return error(expression, symbol, limit, val) / log(denominator, symbol, val) - 1
+    return -1 * error(expression, symbol, limit, val) / log(denominator, symbol, val) - 1

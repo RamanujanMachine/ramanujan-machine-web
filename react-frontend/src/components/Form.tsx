@@ -56,7 +56,6 @@ function Form() {
 			symbol: polynomialA.match(/([a-zA-Z])/)?.[0],
 			i: iterationCount
 		};
-		console.log(body);
 		axios
 			.post('http://localhost:8000/analyze', body)
 			.then((response) => {
