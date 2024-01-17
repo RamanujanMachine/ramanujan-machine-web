@@ -1,0 +1,76 @@
+name: Build and Deploy to Cloud
+
+on:
+  push:
+#    branches:
+#      - main
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Install dependencies
+      run: |
+        apt update -y && apt install -y curl
+        curl -fsSL https://get.docker.com -o get-docker.sh
+        chmod +x get-docker.sh
+        ./get-docker.sh
+
+    - name: Build Docker image
+      run: docker build -t ramanujan-machine-web-portal:latest .
+
+    - name: Save Docker image as tarball
+      run: |
+        docker save ramanujan-machine-web-portal:latest | gzip > image.tar.gz
+        ls -al image.tar*
+
+
+    - name: Prepare SSH Dir
+      run: |
+        mkdir -pv ~/.ssh/
+
+    - name: Write Key
+      env:
+        EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+      run: |
+        echo "$EC2_SSH_KEY" > ~/.ssh/actions.key
+        chmod 600 ~/.ssh/actions.key
+
+#    - name: Add Key to Known Hosts
+#      run: |
+#          ssh-keyscan -v "${{ secrets.EC2_HOST }}" >> ~/.ssh/actions.pub
+
+    - name: Write SSH Config
+      env:
+        EC2_HOST: ${{ secrets.EC2_HOST }}
+        EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
+      run: |
+        cat >>~/.ssh/config <<END
+        Host ec2
+            HostName $EC2_HOST
+            User $EC2_USERNAME
+            IdentityFile ~/.ssh/actions.key
+            StrictHostKeyChecking=no
+            ServerAliveCountMax=10
+            ServerAliveInterval=60
+        END
+
+    - name: Copy Docker image to EC2 instance
+      run: |
+        scp image.tar.gz ec2:/home/ubuntu
+
+    - name: Stop Running Container
+      run: | 
+        ssh ec2 'docker stop $(docker ps -a -q)'
+
+    - name: Configure Docker & Load Image
+      run: |
+        ssh ec2 "docker load -i /home/ubuntu/image.tar.gz"
+
+    - name: Run Docker container on EC2 instance
+      run: |
+        ssh ec2 "docker run -d -p 8080:5137 ramanujan-machine-web-portal:latest"

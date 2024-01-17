@@ -4,7 +4,7 @@ FROM ubuntu:latest
 LABEL description="Ramanujan Machine Web Portal"
 
 # set working directory
-WORKDIR /srv/ramanujan-machine-portal
+WORKDIR /srv/ramanujan-machine-web-portal
 
 # install node
 RUN apt-get update && apt-get -y install python3 python3-pip ca-certificates curl gnupg
