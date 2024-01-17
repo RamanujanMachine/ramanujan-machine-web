@@ -65,7 +65,7 @@ jobs:
 
     - name: Stop Running Container
       run: | 
-        ssh ec2 'docker stop $(docker ps -a -q)'
+        ssh ec2 'docker ps -q | xargs --no-run-if-empty docker stop | xargs --no-run-if-empty docker rm'
 
     - name: Configure Docker & Load Image
       run: |
