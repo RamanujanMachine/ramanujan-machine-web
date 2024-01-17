@@ -1,13 +1,16 @@
 """Entrypoint for the application and REST API handlers"""
 import json
+import traceback
 import uuid
 
+import LIReC.db.access
 import mpmath
+import ramanujan
 import sympy
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from sympy import simplify, sympify, oo, Symbol, Mul, Add
+from sympy import simplify, sympify, Symbol
 from sympy.core.numbers import Infinity
 
 import constants
@@ -18,7 +21,7 @@ from wolfram_client import WolframClient
 
 app = FastAPI()
 
-logger = logger.config()
+logger = logger.config(True)
 
 mpmath.mp.dps = constants.PRECISION
 
@@ -32,7 +35,7 @@ app.add_middleware(CORSMiddleware,
                    allow_headers=["*"])
 
 
-def parse(data: Input) -> tuple[Mul, Add, Symbol]:
+def parse(data: Input) -> tuple[sympy.core, sympy.core, sympy.core, Symbol]:
     """
     Process user inputs into math expressions
     :param data: User form inputs
@@ -41,10 +44,9 @@ def parse(data: Input) -> tuple[Mul, Add, Symbol]:
     x = Symbol(data.symbol, real=True)
     p = sympify(convert(data.p), {data.symbol: x})
     q = sympify(convert(data.q), {data.symbol: x})
-    simple_q = simplify(q)
-    expression = p / simple_q
+    expression = p / simplify(q)
     simple = simplify(expression)
-    return simple, simple_q, x
+    return simple, p, simplify(q), x
 
 
 @app.post("/analyze")
@@ -59,16 +61,16 @@ async def analyze(request: Request):
 
     try:
         data = Input(**(await request.json()))
-        (expression, denominator, symbol) = parse(data)
-
-        limit = sympy.limit(expression, symbol, oo)
-
+        (expression, numerator, denominator, symbol) = parse(data)
+        pcf = ramanujan.pcf.PCF(str(numerator), str(denominator))
+        limit = pcf.limit(depth=data.i)
+        computed_value = LIReC.db.access.identify(limit)
         body = {
             "expression": json.dumps(str(expression)),
             "limit": json.dumps("Infinity" if type(limit) is Infinity else str(limit)),
             "log_error": json.dumps(error_coordinates(expression, symbol, limit)),
             "delta": json.dumps(delta_coordinates(expression, denominator, symbol, limit)),
-            "computed_value": 0  # @TODO: replace with actual computation to i
+            "converges_to": json.dumps(computed_value)
         }
         logger.debug(f"Response: {body}")
         response = JSONResponse(content=body)
@@ -76,7 +78,7 @@ async def analyze(request: Request):
         return response
 
     except Exception as e:
-        logger.warning(e)
+        logger.warning(traceback.format_exc())
         response = JSONResponse(status_code=500, content={"error": "Failed to generate results"})
         return response
 
