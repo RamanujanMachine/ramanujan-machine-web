@@ -31,6 +31,8 @@ react-frontend/yarn-error.log*
 react-frontend/cypress/screenshots/
 react-frontend/cypress/videos/
 
-#BACKEND
+# BACKEND
 .idea
 .env
+# other repos that aren't packaged
+python-backend/external

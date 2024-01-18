@@ -5,7 +5,7 @@ from sympy import Symbol
 import math_utils
 
 GRAPHABLE_TYPES = (int, float, sympy.core.numbers.Integer, sympy.core.numbers.Float)
-X_VALUES = range(0, 1000, 25)
+X_VALUES = range(0, 5000, 100)
 
 
 def error_coordinates(expression: sympy.core, symbol: Symbol, limit: sympy.core.numbers) -> [[int, float]]:

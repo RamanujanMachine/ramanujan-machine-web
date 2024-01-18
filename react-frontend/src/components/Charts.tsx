@@ -36,7 +36,7 @@ function Charts({ results = {}, toggleDisplay }: ChartProps) {
 	const computePairs = (dataset: string) => { 
 		checkResult();
 		return {
-			labels: range(0, 1000, 25),
+			labels: range(0, 5000, 100),
 			datasets: [
 				{
 					label: labels[dataset],
@@ -51,9 +51,7 @@ function Charts({ results = {}, toggleDisplay }: ChartProps) {
 	const checkResult = function() {
 	axios.post('http://localhost:8000/verify', {expression: results.expression})
 			.then((response) => {
-				if (response.status == 200) {
-					console.log('success');
-				} else {
+				if (response.status != 200) {
 					console.warn(response.data.error);
 				}
 			})
@@ -61,8 +59,8 @@ function Charts({ results = {}, toggleDisplay }: ChartProps) {
 		}
 	return (
 		<div className="chart-container">
-			<p>This is the value of the Polynomial Continued Fraction: {results.computed_value}</p>
-			<p>It seems to converge to: {results.limit}</p>
+			<p>This is the value of the Polynomial Continued Fraction:<br/><br/>{JSON.parse(results.limit)}</p>
+			<p>It seems to converge to:<br/><br/>{JSON.parse(results.converges_to)}</p>
 			<i>
 				<sub>
 					Note: the limit is estimated to high confidence using a PSLQ algorithm, but this is not a

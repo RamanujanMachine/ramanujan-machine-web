@@ -53,7 +53,7 @@ function Form() {
 		const body: PostBody = {
 			p: polynomialA,
 			q: polynomialB,
-			symbol: polynomialA.match(/([a-zA-Z])/)?.[0],
+			symbol: polynomialA.match(/([a-zA-Z])/)?.[0] ?? polynomialB.match(/([a-zA-Z])/)?.[0],
 			i: iterationCount
 		};
 		axios
