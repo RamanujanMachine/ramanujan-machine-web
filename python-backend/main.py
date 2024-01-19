@@ -1,7 +1,6 @@
 """Entrypoint for the application and REST API handlers"""
 import json
 import traceback
-import uuid
 
 import LIReC.db.access
 import mpmath
@@ -74,7 +73,7 @@ async def analyze(request: Request):
         }
         logger.debug(f"Response: {body}")
         response = JSONResponse(content=body)
-        response.set_cookie(key="trm", value=str(uuid.uuid4()))
+        # response.set_cookie(key="trm", value=str(uuid.uuid4()))
         return response
 
     except Exception as e:
