@@ -1,3 +1,4 @@
 PRECISION = 15
-PORTS = ['5173', '80']
 PUBLIC_IP = '174.129.252.235'
+HOSTS = ['localhost', '127.0.0.1', PUBLIC_IP]
+PORTS = ['5173', '80']

@@ -24,16 +24,18 @@ logger = logger.config(True)
 
 mpmath.mp.dps = constants.PRECISION
 
-origins = ([item for sublist in
-            [[f"localhost:{port}", f"http://localhost:{port}", f"127.0.0.1:{port}"] for port in constants.PORTS] for
-            item
-            in sublist])
-origins.append("http://localhost")
-origins.append("http://localhost/")
-origins.append("http://174.129.252.235")
-origins.append("http://174.129.252.235/")
-origins.append("http://174.129.252.235:80")
-origins.append("http://174.129.252.235:80/")
+# allow origin to be all possible combinations for protocol, host and port
+origins = [[f"{host}",
+            f"{host}/",
+            f"{host}:{port}",
+            f"{host}:{port}/",
+            f"http://{host}",
+            f"http://{host}/",
+            f"http://{host}:{port}",
+            f"http://{host}:{port}/"]
+           for host in constants.HOSTS for port in constants.PORTS]
+origins = [item for sublist in origins for item in sublist]
+
 logger.debug(origins)
 
 # Only allow traffic from localhost and restrict methods to those we intend to use
