@@ -1,13 +1,13 @@
 """Entrypoint for the application and REST API handlers"""
 import json
 import traceback
-import uuid
 
 import LIReC.db.access
 import mpmath
 import ramanujan
 import sympy
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sympy import simplify, sympify, Symbol
 from sympy.core.numbers import Infinity
@@ -24,14 +24,13 @@ logger = logger.config(True)
 
 mpmath.mp.dps = constants.PRECISION
 
-
-# origins = ["http://localhost:5173", "127.0.0.1:5173"]
-
+origins = ["localhost:5173", "http://localhost:5173", "127.0.0.1:5173"]
 # Only allow traffic from localhost and restrict methods to those we intend to use
-# app.add_middleware(CORSMiddleware,
-#                   allow_origins=origins,
-#                  allow_methods=["GET", "POST", "OPTIONS"],
-##                allow_headers=["*"])
+app.add_middleware(CORSMiddleware,
+                   allow_credentials=False,  # must be true for cookies
+                   allow_origins=origins,
+                   allow_methods=["GET", "POST", "OPTIONS"],
+                   allow_headers=["*"])
 
 
 def parse(data: Input) -> tuple[sympy.core, sympy.core, sympy.core, Symbol]:
@@ -73,7 +72,6 @@ async def analyze(request: Request):
         }
         logger.debug(f"Response: {body}")
         response = JSONResponse(content=body)
-        response.set_cookie(key="trm", value=str(uuid.uuid4()))
         return response
 
     except Exception as e:
