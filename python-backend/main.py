@@ -25,11 +25,13 @@ logger = logger.config(True)
 mpmath.mp.dps = constants.PRECISION
 
 origins = ([item for sublist in
-            [[f"http://localhost:{port}"] for port in constants.PORTS] for
+            [[f"localhost:{port}", f"http://localhost:{port}", f"127.0.0.1:{port}"] for port in constants.PORTS] for
             item
             in sublist])
 origins.append("http://localhost")
-origins.append(f"http://{constants.PUBLIC_IP}")
+origins.append("http://localhost/")
+origins.append("http://174.129.252.235")
+origins.append("http://174.129.252.235/")
 
 # Only allow traffic from localhost and restrict methods to those we intend to use
 app.add_middleware(CORSMiddleware,
