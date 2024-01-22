@@ -46,6 +46,28 @@ app.add_middleware(CORSMiddleware,
                    allow_headers=["*"])
 
 
+# Custom middleware to add headers to all responses
+@app.middleware("http")
+async def add_custom_headers(request: Request, call_next):
+    """
+
+    Parameters
+    ----------
+    request
+    call_next
+
+    Returns
+    -------
+
+    """
+    response = await call_next(request)
+
+    # response.headers["Access-Control-Allow-Origin"] = "http://localhost:5173"
+    # response.headers["Access-Control-Allow-Credentials"] = "true"
+    response.headers["Access-Control-Allow-Private-Network"] = "true"
+    return response
+
+
 def parse(data: Input) -> tuple[sympy.core, sympy.core, sympy.core, Symbol]:
     """
     Process user inputs into math expressions
