@@ -1,1 +1,2 @@
 PRECISION = 15
+PORTS = ['5173', '80']
