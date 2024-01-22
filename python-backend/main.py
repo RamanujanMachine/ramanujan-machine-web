@@ -32,6 +32,9 @@ origins.append("http://localhost")
 origins.append("http://localhost/")
 origins.append("http://174.129.252.235")
 origins.append("http://174.129.252.235/")
+origins.append("http://174.129.252.235:80")
+origins.append("http://174.129.252.235:80/")
+logger.debug(origins)
 
 # Only allow traffic from localhost and restrict methods to those we intend to use
 app.add_middleware(CORSMiddleware,
