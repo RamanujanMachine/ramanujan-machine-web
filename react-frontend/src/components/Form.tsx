@@ -67,7 +67,7 @@ function Form() {
 					console.warn(response.data.error);
 				}
 			})
-			.catch((error) => console.log(error));
+			.catch((error) => console.log(error.toJSON()));
 	};
 
 	return (
