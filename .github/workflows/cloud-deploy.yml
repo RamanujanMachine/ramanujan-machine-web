@@ -71,6 +71,10 @@ jobs:
       run: |
         ssh ec2 "docker load -i /home/ubuntu/image.tar.gz"
 
+    - name: Delete Gzipped Image Tarball
+      run: |
+        ssh ec2 "rm -f /home/ubuntu/image.tar.gz"
+
     - name: Run Docker container on EC2 instance
       run: |
-        ssh ec2 "docker run -d -p 8080:5137 ramanujan-machine-web-portal:latest"
+        ssh ec2 "docker run -p 80:5173 -p 127.0.0.1:8000:8000 -d ramanujan-machine-web-portal:latest"

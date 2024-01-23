@@ -10,6 +10,12 @@ export default defineConfig(() => {
 		build: {
 			outDir: 'build'
 		},
+		server: {
+			proxy: {
+				'/analyze': 'http://localhost:8000',
+				'/verify': 'http://localhost:8000'
+			}
+		},
 		plugins: [react(), eslint()]
 	};
 });
