@@ -57,7 +57,7 @@ function Form() {
 			i: iterationCount
 		};
 		axios
-			.post('http://localhost:8000/analyze', body)
+			.post('/analyze', body)
 			.then((response) => {
 				if (response.status == 200) {
 					setResults(response.data);
@@ -67,7 +67,7 @@ function Form() {
 					console.warn(response.data.error);
 				}
 			})
-			.catch((error) => console.log(error));
+			.catch((error) => console.log(error.toJSON()));
 	};
 
 	return (

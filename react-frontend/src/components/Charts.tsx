@@ -2,6 +2,8 @@ import axios from 'axios';
 import React from 'react';
 import { CategoryScale, Chart, Legend, LinearScale, LineElement, PointElement } from 'chart.js';
 import { Line } from 'react-chartjs-2';
+import { MathJax, MathJaxContext } from 'better-react-mathjax';
+import {parse} from 'mathjs';
 
 const chartOptions = {
 	responsive: true,
@@ -33,6 +35,24 @@ const labels: { [key: string]: string } = {
 Chart.register(CategoryScale, Legend, LinearScale, LineElement, PointElement);
 
 function Charts({ results = {}, toggleDisplay }: ChartProps) {
+
+	const config = {
+			tex: {
+			inlineMath: [["$", "$"]],
+			displayMath: [["$$", "$$"]]
+		}
+	};
+  
+	const computeValue = () => {
+		const input = JSON.parse(results.converges_to.replaceAll('**','^'));
+		const mathy = parse(input).toTex();
+		return `$$${mathy}$$`;
+	};
+
+	const trimLimit = () => {
+		const decimalPosition = results.limit.indexOf('.');
+		return JSON.parse(results.limit).substring(0, 30 + decimalPosition + 1 ?? results.limit.length);
+	}
 	const computePairs = (dataset: string) => { 
 		checkResult();
 		return {
@@ -59,8 +79,10 @@ function Charts({ results = {}, toggleDisplay }: ChartProps) {
 		}
 	return (
 		<div className="chart-container">
-			<p>This is the value of the Polynomial Continued Fraction:<br/><br/>{JSON.parse(results.limit)}</p>
-			<p>It seems to converge to:<br/><br/>{JSON.parse(results.converges_to)}</p>
+			<MathJaxContext config={config} src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+			<p>This is the value of the Polynomial Continued Fraction:<br/><br/>{trimLimit()}</p>
+			<p>It seems to converge to:<br/><br/> <MathJax inline dynamic>{computeValue()}</MathJax></p>
+			</MathJaxContext>
 			<i>
 				<sub>
 					Note: the limit is estimated to high confidence using a PSLQ algorithm, but this is not a
