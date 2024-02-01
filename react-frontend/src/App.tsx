@@ -11,9 +11,6 @@ function App() {
 			</div>
 			<div className="body">
 				<Form></Form>
-				<div className="link">
-					<a href="https://www.ramanujanmachine.com/">Ramanujan Machine Home</a>
-				</div>
 			</div>
 		</div>
 	);

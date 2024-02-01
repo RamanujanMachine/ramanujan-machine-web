@@ -16,7 +16,7 @@ RUN echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesourc
 
 RUN apt-get update && apt-get -y install nodejs
 
-COPY ./react-frontend ./	 
+COPY ./react-frontend ./ 
 
 # install node package dependencies
 RUN npm install
@@ -40,5 +40,6 @@ EXPOSE 5173
 EXPOSE 8000
 
 COPY docker_start.sh docker_start.sh
+# local COPY .env .env
 RUN chmod +x docker_start.sh
 CMD ./docker_start.sh

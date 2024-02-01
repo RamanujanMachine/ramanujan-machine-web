@@ -4,11 +4,14 @@ import PolynomialInput from './PolynomialInput';
 import Charts from './Charts';
 
 interface PostBody {
-	p: string;
-	q: string;
+	a: string;
+	b: string;
 	symbol: string | undefined;
 	i: number;
 }
+
+type XYPair = [number, number];
+type CoordinateList = XYPair[];
 
 function Form() {
 	const [iterationCount, setIterationCount] = useState(1000);
@@ -16,7 +19,7 @@ function Form() {
 	const [denominatorIsValid, setDenominatorValidity] = useState(false);
 	const [polynomialA, setPolynomialA] = useState('');
 	const [polynomialB, setPolynomialB] = useState('');
-	const [results, setResults] = useState<number[]>([]);
+	const [results, setResults] = useState<CoordinateList>([]);
 	const [showCharts, setShowCharts] = useState(false);
 
 	useEffect(() => {
@@ -51,8 +54,8 @@ function Form() {
 	const submit = (e: any) => {
 		e.preventDefault();
 		const body: PostBody = {
-			p: polynomialA,
-			q: polynomialB,
+			a: polynomialA,
+			b: polynomialB,
 			symbol: polynomialA.match(/([a-zA-Z])/)?.[0] ?? polynomialB.match(/([a-zA-Z])/)?.[0],
 			i: iterationCount
 		};
