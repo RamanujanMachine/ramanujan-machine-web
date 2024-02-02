@@ -15,7 +15,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        apt update -y && apt install -y curl
+        sudo apt update -y && sudo apt install -y curl
         curl -fsSL https://get.docker.com -o get-docker.sh
         chmod +x get-docker.sh
         ./get-docker.sh
