@@ -15,7 +15,7 @@ from sympy.core.numbers import Infinity
 
 import constants
 import logger
-from graph_utils import delta_coordinates, error_coordinates
+from graph_utils import delta_coordinates, error_coordinates, slope_of_error_coordinates
 from input import Input, convert, Expression
 from math_utils import generalized_computed_values, simple_computed_values
 from wolfram_client import WolframClient
@@ -73,19 +73,27 @@ async def analyze(request: Request):
         pcf = ramanujan.pcf.PCF(str(a), str(b))
         limit = mpmath.mpf(pcf.limit(depth=data.i))
         logger.debug(f"PCF limit() returned: {limit}")
-        computed_value = db.identify(values=[limit], wide_search=True)
-        for m in computed_value:
+        computed_values = db.identify(values=[limit], wide_search=True)
+        for m in computed_values:
             logger.debug(f"identify returned: {m}")
+        # per the link below, "when bi = 1 (the partial numerator) for all i the expression is called a simple continued
+        # fraction"
+        # b here is the partial numerator (a and b are often used interchangeably which may lead to confusion when there
+        # is no associated image of the fraction)
+        # https://en.wikipedia.org/wiki/Continued_fraction#Basic_formula
         if data.b == "1":
             (values, denom_values) = simple_computed_values(a, symbol)
         else:
+            # generalized continued fractions, where the partial numerator has its own formula and is not equal to 1
+            # https://en.wikipedia.org/wiki/Generalized_continued_fraction
             (values, denom_values) = generalized_computed_values(a, b, symbol)
         body = {
             "expression": json.dumps(str(expression)),
             "limit": json.dumps("Infinity" if type(limit) is Infinity else str(limit)),
             "error": json.dumps(error_coordinates(values, limit)),
+            "error_deriv": json.dumps(slope_of_error_coordinates(values, limit)),
             "delta": json.dumps(delta_coordinates(values, denom_values, limit)),
-            "converges_to": json.dumps(str(computed_value[0] if len(computed_value) > 0 else None))
+            "converges_to": json.dumps(str(computed_values[0] if len(computed_values) > 0 else None))
         }
         logger.debug(f"Response: {body}")
         response = JSONResponse(content=body)

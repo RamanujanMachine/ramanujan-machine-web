@@ -79,7 +79,7 @@ function Charts({ results = {}, toggleDisplay }: ChartProps) {
 			<p>This is the value of the Polynomial Continued Fraction:</p>
 			<p className="center-text">{trimLimit()}</p>
 			<p>It seems to converge to:<br/><br/> <MathJax inline dynamic>{computeValue()}</MathJax></p>
-			{ wolframResults.length > 0 ? (
+			{ wolframResults && wolframResults.length > 0 ? (
 				<div>
 					<p className="center-text"><i>or</i></p>
 					<p><MathJax inline dynamic>{wolframValue(wolframResults[0].plaintext)}</MathJax></p>
@@ -93,7 +93,7 @@ function Charts({ results = {}, toggleDisplay }: ChartProps) {
 				</sub>
 			</i>
 			<p>The rate of convergence for this Polynomial Continued Fraction (in digits per step): </p>
-			<ScatterPlot id="error_chart" data={computePairs('error')} />
+			<ScatterPlot id="error_chart" data={computePairs('error_deriv')} />
 			<p>
 				Delta is a measure of the irrationality of a number (read more about it{' '}
 				<a href="https://www.ramanujanmachine.com/the-mathematics-of-polynomial-continued-fractions/irrationality-testing/">
