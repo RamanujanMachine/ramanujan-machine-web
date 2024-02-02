@@ -9,8 +9,8 @@ logger = logging.getLogger('rm_web_app')
 
 class Input(BaseModel):
     """Structure of user form data"""
-    p: str
-    q: str
+    a: str
+    b: str
     i: int
     symbol: str
 

@@ -1,37 +1,79 @@
 """Utility functions that generate graphable coordinate pairs for the frontend"""
-import sympy
-from sympy import Symbol
+import logging
+from typing import TypedDict
 
-import math_utils
+import mpmath
+import sympy
+
+from constants import DEBUG_LINES
 
 GRAPHABLE_TYPES = (int, float, sympy.core.numbers.Integer, sympy.core.numbers.Float)
-X_VALUES = range(0, 5000, 100)
+
+logger = logging.getLogger('rm_web_app')
 
 
-def error_coordinates(expression: sympy.core, symbol: Symbol, limit: sympy.core.numbers) -> [[int, float]]:
+class Point2D(TypedDict):
+    x: int
+    y: str
+
+
+def error_coordinates(values: list[mpmath.mpf], limit: mpmath.mpf) -> list[Point2D]:
     """
-    graph coords for the error of an expression log(|expression - L|) in terms of symbol
-    :param expression: univariate mathematical expression comprising a ratio of two polynomials
-    :param symbol: the variable used in expression
-    :param limit: the computed limit of the expression as it goes to infinity
+    graph coords for the error of an expression log(|expression - L|)
+    :param values: computed values for continued fraction
+    :param limit: the limit of the expression as computed by PCF(a_n, b_n).limit()
     :return: array of [x,y] pairs for graphing purposes
     """
-    y_values = [math_utils.error(expression, symbol, limit, val) for val in X_VALUES]
-    return [[x, float(y)] for x, y in zip(X_VALUES, y_values) if type(y) in GRAPHABLE_TYPES]
+    x_y_pairs = []
+    for i in range(0, len(values)):
+        if values[i] is not None:
+            y_value = mpmath.log10(abs(values[i] - limit))
+            if i <= DEBUG_LINES:
+                logger.debug(f"Error {i} {values[i]} difference: {values[i] - limit} "
+                             f"abs: {abs(values[i] - limit)} log10: {y_value}")
+
+            x_y_pairs.append(Point2D(x=i, y=str(y_value)))
+
+    return x_y_pairs
 
 
-def delta_coordinates(expression: sympy.core,
-                      denominator: sympy.core,
-                      symbol: Symbol,
-                      limit: sympy.core.numbers) -> [[int, float]]:
+def slope_of_error_coordinates(values: list[mpmath.mpf], limit: mpmath.mpf) -> list[Point2D]:
     """
-    graph coords for the error delta for an expression -1 * (log(|Pn/Qn - L|) / log(Qn)) - 1 in terms of symbol
-    :param expression: univariate mathematical expression comprising a ratio of two polynomials
-    :param denominator: univariate polynomial
-    :param symbol: the variable used in expression
-    :param limit: the computed limit of the expression as it goes to infinity
+    graph coords for the error of an expression log(|expression - L|)
+    :param values: computed values for continued fraction
+    :param limit: the limit of the expression as computed by PCF(a_n, b_n).limit()
     :return: array of [x,y] pairs for graphing purposes
     """
+    x_y_pairs = []
+    error_vals = error_coordinates(values, limit)
+    for i in range(1, len(error_vals)):
+        y_value = mpmath.mpf(error_vals[i]['y']) - mpmath.mpf(error_vals[i - 1]['y'])
+        if i <= DEBUG_LINES:
+            logger.debug(f"error slope at {i}: {y_value}")
+
+        x_y_pairs.append(Point2D(x=i, y=str(y_value)))
+
+    return x_y_pairs
+
+
+def delta_coordinates(values: list[mpmath.mpf], q_values: list[mpmath.mpf], limit: mpmath.mpf) -> list[Point2D]:
+    """
+    graph coords for the error delta for an expression -1 * (log(|Pn/Qn - L|) / log(Qn)) - 1
+    :param values: computed values for continued fraction
+    :param limit: the limit of the expression as computed by PCF(a_n, b_n).limit()
+    :param q_values: computed values for continued fraction - denominator only
+    :return: array of [x,y] pairs for graphing purposes
+    """
+    x_y_pairs = []
     # graph coords of error delta: -1 * (log(|Pn/Qn - L|) / log(Qn)) - 1
-    y_values = [-1 * math_utils.delta(expression, denominator, symbol, limit, val) for val in X_VALUES]
-    return [[x, float(y)] for x, y in zip(X_VALUES, y_values) if type(y) in GRAPHABLE_TYPES]
+    for i in range(1, min(len(values), len(q_values))):
+        if values[i] is not None and q_values[i] is not None and q_values[i] > 0:
+            y_value = (mpmath.mpf(-1) *
+                       (mpmath.log10(abs(values[i] - limit)) / mpmath.log10(q_values[i]))
+                       - mpmath.mpf(1))
+            if i <= DEBUG_LINES:
+                logger.debug(f"Delta {i} {y_value}")
+
+            x_y_pairs.append(Point2D(x=i, y=str(y_value)))
+
+    return x_y_pairs

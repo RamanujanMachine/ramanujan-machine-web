@@ -1,13 +1,14 @@
 """
 Unit tests
 """
+import mpmath
 import pytest
-import sympy
-from sympy import sympify, simplify, SympifyError, Symbol, oo
+from sympy import sympify, simplify, SympifyError, Symbol
 
 import custom_exceptions
-from main import convert
-from math_utils import error, delta, log
+from input import Input
+from main import convert, parse
+from math_utils import generalized_computed_values, simple_computed_values
 from wolfram_client import WolframClient
 
 TEST_INPUT_1 = "4^x"
@@ -73,19 +74,44 @@ def test_api_success() -> None:
     assert type(WolframClient.ask("time in Iceland")) is dict
 
 
-def test_error() -> None:
-    limit = sympy.limit(sympify(P) / sympify(Q), SYMBOL, oo)
-    assert type(error(sympify(P) / sympify(Q), SYMBOL, limit, val=1)) in (
-        sympy.core.numbers.ComplexInfinity, sympy.core.mul.Mul, sympy.core.add.Add)
+def test_generalized_compute_values() -> None:
+    # start at n = 1
+    values = [mpmath.mpf(584) / mpmath.mpf(117), mpmath.mpf(312120) / mpmath.mpf(62531),
+              mpmath.mpf(456205824) / mpmath.mpf(91397560),
+              mpmath.mpf(1415240640000) / mpmath.mpf(283533296824),
+              mpmath.mpf(8010210009600000) / mpmath.mpf(1604788039632960)]
+    data = Input(a="(1 + 2 n) (5 + 17 n (1 + n))", b="-n^6", symbol="n", i=100)
+    (expression, a, b, symbol) = parse(data)
+    (convergents, denominators) = generalized_computed_values(a, b, symbol)
+    assert (denominators[1] == mpmath.mpf(117))
+    assert (denominators[2] == mpmath.mpf(62531))
+    assert (denominators[3] == mpmath.mpf(91397560))
+    assert (denominators[4] == mpmath.mpf(283533296824))
+    assert (denominators[5] == mpmath.mpf(1604788039632960))
+    assert (convergents[1] == values[0])
+    assert (convergents[2] == values[1])
+    assert (convergents[3] == values[2])
+    assert (convergents[4] == values[3])
+    assert (convergents[5] == values[4])
 
 
-def test_delta() -> None:
-    limit = sympy.limit(sympify(P) / sympify(Q), SYMBOL, oo)
-    assert type(
-        delta(sympify(P) / sympify(Q), sympify(Q), SYMBOL, limit, val=1)) in (
-               sympy.core.numbers.ComplexInfinity, sympy.core.mul.Mul, sympy.core.add.Add)
-
-
-def test_log() -> None:
-    assert type(log(sympify(P) / sympify(Q), SYMBOL, val=1)) in (
-        sympy.core.numbers.ComplexInfinity, sympy.core.mul.Mul, sympy.core.add.Add)
+def test_simple_compute_values() -> None:
+    # start at n = 1
+    values = [1, mpmath.fdiv(2, 3), mpmath.fdiv(7, 10), mpmath.fdiv(30, 43), mpmath.fdiv(157, 225),
+              mpmath.fdiv(972, 1393),
+              mpmath.fdiv(6961, 9976), mpmath.fdiv(56660, 81201)]
+    data = Input(a="n", b="1", symbol="n", i=100)
+    (expression, a, b, symbol) = parse(data)
+    (convergents, denominators) = simple_computed_values(a, symbol)
+    assert (denominators[2] == mpmath.mpf(3))
+    assert (denominators[3] == mpmath.mpf(10))
+    assert (denominators[4] == mpmath.mpf(43))
+    assert (denominators[5] == mpmath.mpf(225))
+    assert (denominators[6] == mpmath.mpf(1393))
+    assert (denominators[7] == mpmath.mpf(9976))
+    assert (convergents[2] == values[1])
+    assert (convergents[3] == values[2])
+    assert (convergents[4] == values[3])
+    assert (convergents[5] == values[4])
+    assert (convergents[6] == values[5])
+    assert (convergents[7] == values[6])
