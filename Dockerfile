@@ -5,6 +5,8 @@ LABEL description="Ramanujan Machine Web Portal"
 
 # set working directory
 WORKDIR /srv/ramanujan-machine-web-portal
+ARG wolfram_app_id
+ENV WOLFRAM_APP_ID=$wolfram_app_id
 
 # install node
 RUN apt-get update && apt-get -y install git python3 python3-pip python3.10-venv ca-certificates curl gnupg libpq-dev libgmp-dev libmpfr-dev libmpc-dev
@@ -40,6 +42,5 @@ EXPOSE 5173
 EXPOSE 8000
 
 COPY docker_start.sh docker_start.sh
-# local COPY .env .env
 RUN chmod +x docker_start.sh
 CMD ./docker_start.sh

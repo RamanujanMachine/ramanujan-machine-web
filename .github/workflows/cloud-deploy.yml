@@ -21,7 +21,9 @@ jobs:
         ./get-docker.sh
 
     - name: Build Docker image
-      run: docker build -t ramanujan-machine-web-portal:latest .
+      env:
+        WOLFRAM_APP_ID: ${{ secrets.WOLFRAM_APP_ID }}
+      run: docker build --build-arg wolfram_app_id=$WOLFRAM_APP_ID -t ramanujan-machine-web-portal:latest .
 
     - name: Save Docker image as tarball
       run: |
