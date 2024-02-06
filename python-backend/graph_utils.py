@@ -67,7 +67,7 @@ def delta_coordinates(values: list[mpmath.mpf], q_values: list[mpmath.mpf], limi
     x_y_pairs = []
     # graph coords of error delta: -1 * (log(|Pn/Qn - L|) / log(Qn)) - 1
     for i in range(1, min(len(values), len(q_values))):
-        if values[i] is not None and q_values[i] is not None and q_values[i] > 0:
+        if values[i] is not None and q_values[i] is not None and mpmath.log10(q_values[i]) != 0:
             y_value = (mpmath.mpf(-1) *
                        (mpmath.log10(abs(values[i] - limit)) / mpmath.log10(q_values[i]))
                        - mpmath.mpf(1))
