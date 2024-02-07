@@ -27,6 +27,8 @@ def error_coordinates(values: list[mpmath.mpf], limit: mpmath.mpf) -> list[Point
     x_y_pairs = []
     for i in range(0, len(values)):
         if values[i] is not None:
+            # taking log 10 gives us the order of magnitude of the difference -  the number of zeros after the decimal
+            # which is a gauge of the proximity of the value at n to the "limit"
             y_value = mpmath.log10(abs(values[i] - limit))
             if i <= DEBUG_LINES:
                 logger.debug(f"Error {i} {values[i]} difference: {values[i] - limit} "
@@ -67,7 +69,12 @@ def delta_coordinates(values: list[mpmath.mpf], q_values: list[mpmath.mpf], limi
     x_y_pairs = []
     # graph coords of error delta: -1 * (log(|Pn/Qn - L|) / log(Qn)) - 1
     for i in range(1, min(len(values), len(q_values))):
-        if values[i] is not None and q_values[i] is not None and mpmath.log10(q_values[i]) != 0:
+        # we test for values that would generate irrational results or exceptions
+        # e.g. divide by zero when taking log10 of 1
+        # taking log 10 gives us the order of magnitude of the difference -  the number of zeros after the decimal
+        # which is a gauge of the proximity of the value at n to the "limit"
+        # in this case we are then comparing that precision to the precision of the denominator
+        if values[i] is not None and q_values[i] is not None and q_values[i] > 0 and q_values[i] != 1:
             y_value = (mpmath.mpf(-1) *
                        (mpmath.log10(abs(values[i] - limit)) / mpmath.log10(q_values[i]))
                        - mpmath.mpf(1))
