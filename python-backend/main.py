@@ -51,8 +51,8 @@ def parse(data: Input) -> tuple[sympy.core, sympy.core, sympy.core, Symbol]:
     :return: tuple including p/q, simplified q and the symbol/variable used in these expressions
     """
     x = Symbol(data.symbol, real=True)
-    a = sympify(convert(data.a), {data.symbol: x})
-    b = sympify(convert(data.b), {data.symbol: x})
+    a = sympify(convert(data.a), {data.symbol: x}) if (len(data.symbol) == 1) else sympify(convert(data.a))
+    b = sympify(convert(data.b), {data.symbol: x}) if (len(data.symbol) == 1) else sympify(convert(data.b))
     expression = a / b
     return expression, a, b, x
 
