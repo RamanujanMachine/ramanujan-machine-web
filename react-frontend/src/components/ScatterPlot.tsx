@@ -53,10 +53,10 @@ const ScatterPlot = ({ id, data }:{id:string, data: CoordinatePair[]}) =>  {
                 .call(d3.axisLeft(yScale));
             yAxis.attr("transform",`translate(${h_margin},${v_margin})`);
 
-            const line = d3
+            /* const line = d3
             .line<CoordinatePair>()
             .x((d) => xScale(d.x))
-            .y((d) => yScale(parseFloat(d.y))).curve(d3.curveBasis);
+            .y((d) => yScale(parseFloat(d.y))).curve(d3.curveBasis); */
 
             svg.append('g')
             .selectAll("dot")
@@ -69,7 +69,7 @@ const ScatterPlot = ({ id, data }:{id:string, data: CoordinatePair[]}) =>  {
               .attr("transform", `translate(${h_margin}, ${v_margin})`)
               .style("fill", "var(--accent)");
 
-              svg
+              /* svg
             .data([filteredData])
             .append('path')
             .attr('d', line)
@@ -78,7 +78,7 @@ const ScatterPlot = ({ id, data }:{id:string, data: CoordinatePair[]}) =>  {
             .attr("stroke-dasharray", "2 2")
             .attr("stroke-opacity", "0.6")
             .attr("stroke-width", "2")
-            .attr("stroke", "var(--muted)");
+            .attr("stroke", "var(--muted)"); */
 
         }
     }, [data]);
