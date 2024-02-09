@@ -19,29 +19,29 @@ const ScatterPlot = ({ id, data }:{id:string, data: CoordinatePair[]}) =>  {
             svg.selectAll('*').remove();   
 
             var v_margin = 20, h_margin = 20,
-            width = 580 - h_margin,
-            height = 400 - v_margin;
+                width = 580 - h_margin,
+                height = 400 - v_margin;
             svg.style("overflow", "visible")
-            .style("background", "#ffffff");
+                .style("background", "#ffffff");
             svg.append("g").attr("width", width + 5*h_margin)
             svg.append("g").attr("height", height + 5*v_margin)
-            .attr("transform", `translate(${h_margin}, ${v_margin})`);
+                .attr("transform", `translate(${h_margin}, ${v_margin})`);
             
             const [minX, maxX] = d3.extent(filteredData, (d) => {return d.x;});
             console.debug(`x min ${minX} x max ${maxX}`);
 
             const xScale = d3
-            .scaleLinear()
-            .domain([minX!, maxX!])
-            .range([0, width - h_margin]);
+                .scaleLinear()
+                .domain([minX!, maxX!])
+                .range([0, width - h_margin]);
         
             const [minY, maxY] = d3.extent(filteredData, (d) => parseFloat(d.y));
             console.debug(`y min ${minY} y max ${maxY}`);
         
             const yScale = d3
-            .scaleLinear()
-            .domain([minY!, maxY!])
-            .range([height -v_margin, 0]);
+                .scaleLinear()
+                .domain([minY!, maxY!])
+                .range([height -v_margin, 0]);
             
             // x axis
             const xAxis = svg.append("g")
@@ -54,38 +54,38 @@ const ScatterPlot = ({ id, data }:{id:string, data: CoordinatePair[]}) =>  {
             yAxis.attr("transform",`translate(${h_margin},${v_margin})`);
 
             const line = d3
-            .line<CoordinatePair>()
-            .x((d) => xScale(d.x))
-            .y((d) => yScale(parseFloat(d.y))).curve(d3.curveBasis);
+                .line<CoordinatePair>()
+                .x((d) => xScale(d.x))
+                .y((d) => yScale(parseFloat(d.y))).curve(d3.curveBasis);
 
             svg.append('g')
-            .selectAll("dot")
-            .data(filteredData)
-            .enter()
-            .append("circle")
-              .attr("cx", function (d) { return xScale(d.x); } )
-              .attr("cy", function (d) { return yScale(parseFloat(d.y)); } )
-              .attr("r", 1.5)
-              .attr("transform", `translate(${h_margin}, ${v_margin})`)
-              .style("fill", "var(--accent)");
+                .selectAll("dot")
+                .data(filteredData)
+                .enter()
+                .append("circle")
+                .attr("cx", function (d) { return xScale(d.x); } )
+                .attr("cy", function (d) { return yScale(parseFloat(d.y)); } )
+                .attr("r", 1.5)
+                .attr("transform", `translate(${h_margin}, ${v_margin})`)
+                .style("fill", "var(--accent)");
 
-              svg
-            .data([filteredData])
-            .append('path')
-            .attr('d', line)
-            .attr("transform", `translate(${h_margin}, ${v_margin})`)
-            .attr("fill", "none")
-            .attr("stroke-dasharray", "2 2")
-            .attr("stroke-opacity", "0.6")
-            .attr("stroke-width", "2")
-            .attr("stroke", "var(--muted)");
+            svg
+                .data([filteredData])
+                .append('path')
+                .attr('d', line)
+                .attr("transform", `translate(${h_margin}, ${v_margin})`)
+                .attr("fill", "none")
+                .attr("stroke-dasharray", "2 2")
+                .attr("stroke-opacity", "0.6")
+                .attr("stroke-width", "2")
+                .attr("stroke", "var(--muted)");
 
         }
     }, [data]);
 
-return <svg width={560} height={360} id={id} >
-    <g></g>
-</svg>;
+    return <svg width={560} height={360} id={id} >
+        <g></g>
+    </svg>;
 };
 
 export default ScatterPlot;
