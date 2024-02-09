@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { MathJax, MathJaxContext } from 'better-react-mathjax';
 import {parse} from 'mathjs';
 import ScatterPlot from './ScatterPlot';
+import constants from '../lib/constants';
 
 interface ChartProps {
 	results: any;
@@ -31,7 +32,12 @@ function Charts({ results = {}, toggleDisplay }: ChartProps) {
 	const computeValue = () => {
 		// we are replacing the exponent operator from python to js syntax
 		// we are also replacing the parentheses with the precision at the end of the expression returned from identify
-		const input = JSON.parse(results.converges_to).replaceAll('**','^').replace(' = 0','').replace(/\s\([0-9]+\)$/,'');
+		const input = convertConstants(JSON.parse(results.converges_to)
+			.replaceAll('**','^')
+			.replace(' = 0','')
+			.replace(/\s\([0-9]+\)$/,'')
+		);
+
 		try { 
 			const mathy = parse(input).toTex();
 			return `$$${mathy}$$`;
@@ -39,6 +45,14 @@ function Charts({ results = {}, toggleDisplay }: ChartProps) {
 			console.log(`failed to parse ${input}`);
 			return '(unparseable result)';
 		}
+	};
+
+	const convertConstants = (input: string) => {
+		let cleanString = input;
+		for(const c in constants){
+			if(constants[c].replacement) cleanString = cleanString.replaceAll(c, constants[c].replacement!!);
+		}
+		return cleanString;
 	};
 
 	const wolframValue = (input: string) => {
