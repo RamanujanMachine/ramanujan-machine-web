@@ -1,16 +1,19 @@
 import React, { useEffect } from 'react';
 import * as d3 from 'd3';
-
-type CoordinatePair = {
-    x: number,
-    y: string
-};
+import { CoordinatePair } from '../lib/types';
 
 const WIDTH = 580;
 const HEIGHT = 400;
 
 const ScatterPlot = ({ id, data }:{id:string, data: CoordinatePair[]}) =>  {
     
+    const fit = function(x:number): number{
+        const ix = data.findIndex((entry) => entry.x == x);
+        if(ix-1 >=0){
+            return ((parseFloat(data[ix].y) + parseFloat(data[ix-1].y))/2.0);
+        } else return NaN;
+    }
+
     useEffect(() => {
         if (data && data.length > 0) {
             const filteredData = data.filter(point => !isNaN(parseFloat(point.y)) && isFinite(parseFloat(point.y)));
@@ -53,8 +56,10 @@ const ScatterPlot = ({ id, data }:{id:string, data: CoordinatePair[]}) =>  {
 
             const line = d3
                 .line<CoordinatePair>()
-                .x((d) => xScale(d.x))
-                .y((d) => yScale(parseFloat(d.y))).curve(d3.curveBasis);
+                .x((d) => xScale((d.x + d.x-1)/2))
+                .y((d) => yScale(fit(d.x)))
+                .defined((d) => !isNaN(fit(d.x)))
+                .curve(d3.curveBasis);
 
             svg.append('g')
                 .selectAll("dot")
@@ -64,19 +69,19 @@ const ScatterPlot = ({ id, data }:{id:string, data: CoordinatePair[]}) =>  {
                 .attr("cx", function (d) { return xScale(d.x); } )
                 .attr("cy", function (d) { return yScale(parseFloat(d.y)); } )
                 .attr("r", 1.5)
-                .attr("transform", `translate(${0}, ${0})`)
+                .attr("transform", `translate(0, 0)`)
                 .style("fill", "var(--accent)");
 
-            /* svg
+            svg
                 .data([filteredData])
                 .append('path')
                 .attr('d', line)
-                .attr("transform", `translate(${h_margin}, ${v_margin})`)
+                .attr("transform", `translate(0, 0)`)
                 .attr("fill", "none")
-                .attr("stroke-dasharray", "2 2")
-                .attr("stroke-opacity", "0.6")
-                .attr("stroke-width", "2")
-                .attr("stroke", "var(--muted)"); */
+                .attr("stroke-dasharray", "3 3")
+                .attr("stroke-opacity", "0.5")
+                .attr("stroke-width", "1")
+                .attr("stroke", "var(--muted)");
 
         }
     }, [data]);

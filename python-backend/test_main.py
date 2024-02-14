@@ -8,7 +8,7 @@ from sympy import sympify, simplify, SympifyError, Symbol
 import custom_exceptions
 from input import Input
 from main import convert, parse
-from math_utils import generalized_computed_values, simple_computed_values
+from math_utils import generalized_computed_values, simple_computed_values, cpython_gcd
 from wolfram_client import WolframClient
 
 TEST_INPUT_1 = "4^x"
@@ -115,3 +115,8 @@ def test_simple_compute_values() -> None:
     assert (convergents[5] == values[4])
     assert (convergents[6] == values[5])
     assert (convergents[7] == values[6])
+
+
+def test_cpython_gcd() -> None:
+    assert (cpython_gcd(16, 64) == 16)
+    assert (cpython_gcd(81, 99) == 9)
