@@ -15,7 +15,7 @@ from sympy.core.numbers import Infinity
 
 import constants
 import logger
-from graph_utils import delta_coordinates, error_coordinates, slope_of_error_coordinates
+from graph_utils import delta_coordinates, slope_of_error_coordinates, delta_n_coordinates, error_coordinates, Point2D
 from input import Input, convert, Expression
 from math_utils import generalized_computed_values, simple_computed_values
 from wolfram_client import WolframClient
@@ -82,20 +82,28 @@ async def analyze(request: Request):
         # is no associated image of the fraction)
         # https://en.wikipedia.org/wiki/Continued_fraction#Basic_formula
         if data.b == "1":
-            (values, denom_values) = simple_computed_values(a, symbol)
+            (values, num_values, denom_values) = simple_computed_values(a, symbol, iterations=data.i)
         else:
             # generalized continued fractions, where the partial numerator has its own formula and is not equal to 1
             # https://en.wikipedia.org/wiki/Generalized_continued_fraction
-            (values, denom_values) = generalized_computed_values(a, b, symbol)
+            (values, num_values, denom_values) = generalized_computed_values(a, b, symbol, iterations=data.i)
         body = {
             "expression": json.dumps(str(expression)),
             "limit": json.dumps("Infinity" if type(limit) is Infinity else str(limit)),
+            # "growth": json.dumps(growth_coordinates(num_values, denom_values)),
+            "a": json.dumps(
+                [Point2D(x=n, y=str(a.subs(symbol, n).evalf(constants.PRECISION))) for n in range(0, data.i)]),
+            "b": json.dumps(
+                [Point2D(x=n, y=str(b.subs(symbol, n).evalf(constants.PRECISION))) for n in range(0, data.i)]),
+            "p": json.dumps([Point2D(x=i, y=str(p)) for i, p in enumerate(num_values)]),
+            "q": json.dumps([Point2D(x=i, y=str(q)) for i, q in enumerate(denom_values)]),
+            "p_over_q": json.dumps([Point2D(x=i, y=str(pq)) for i, pq in enumerate(values)]),
             "error": json.dumps(error_coordinates(values, limit)),
-            "error_deriv": json.dumps(slope_of_error_coordinates(values, limit)),
-            "delta": json.dumps(delta_coordinates(values, denom_values, limit)),
+            "error_slope": json.dumps(slope_of_error_coordinates(values, limit)),
+            "delta": json.dumps(delta_coordinates(values, num_values, denom_values, limit)),
+            "delta_n": json.dumps(delta_n_coordinates(num_values, denom_values)),
             "converges_to": json.dumps(str(computed_values[0] if len(computed_values) > 0 else None))
         }
-        logger.debug(f"Response: {body}")
         response = JSONResponse(content=body)
         return response
 

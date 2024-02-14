@@ -29,10 +29,10 @@ function Charts({ results = {}, toggleDisplay }: ChartProps) {
         verify();
     }, [results]);
   
-    const computeValue = () => {
+    const computeValue = (rawString: string) => {
         // we are replacing the exponent operator from python to js syntax
         // we are also replacing the parentheses with the precision at the end of the expression returned from identify
-        const input = convertConstants(JSON.parse(results.converges_to)
+        const input = convertConstants(JSON.parse(rawString)
             .replaceAll('**','^')
             .replace(' = 0','')
             .replace(/\s\([0-9]+\)$/,'')
@@ -46,6 +46,16 @@ function Charts({ results = {}, toggleDisplay }: ChartProps) {
             return '(unparseable result)';
         }
     };
+
+    const mathify = (input: string) => {
+        try { 
+            const mathy = parse(input).toTex();
+            return `$$${mathy}$$`;
+        } catch(e) {
+            console.log(`failed to parse ${input}`);
+            return '(unparseable result)';
+        }
+    }
 
     const convertConstants = (input: string) => {
         let cleanString = input;
@@ -92,31 +102,46 @@ function Charts({ results = {}, toggleDisplay }: ChartProps) {
             <MathJaxContext config={config} src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
                 <p>This is the value of the Polynomial Continued Fraction:</p>
                 <p className="center-text">{trimLimit()}</p>
-                <p>It seems to converge to:<br/><br/> <MathJax inline dynamic>{computeValue()}</MathJax></p>
+                <p>It seems to converge to:<br/><br/> <MathJax inline dynamic>{computeValue(results['converges_to'])}</MathJax></p>
                 { wolframResults && wolframResults.length > 0 ? (
                     <div>
                         <p className="center-text"><i>or</i></p>
                         <p><MathJax inline dynamic>{wolframValue(wolframResults[0].plaintext)}</MathJax></p>
                     </div>
                 ):''}
-            </MathJaxContext>
-            <i>
-                <sub>
+                <p><i>
+                    <sub>
 					Note: the limit is estimated to high confidence using a PSLQ algorithm, but this is not a
 					proof.
-                </sub>
-            </i>
-            <p>The rate of convergence for this Polynomial Continued Fraction (in digits per step): </p>
-            <ScatterPlot id="error_chart" data={computePairs('error_deriv')} />
-            <p>
+                    </sub>
+                </i>
+                </p>
+                <p><MathJax inline dynamic>{`$a_n$`}</MathJax></p>
+                <ScatterPlot id="a" data={computePairs('a')} />
+                <p><MathJax inline dynamic>{`$b_n$`}</MathJax></p>
+                <ScatterPlot id="b" data={computePairs('b')} />
+                <p><MathJax inline dynamic>{`$p_n$`}</MathJax></p>
+                <ScatterPlot id="p" data={computePairs('p')} />
+                <p><MathJax inline dynamic>{`$q_n$`}</MathJax></p>
+                <ScatterPlot id="q" data={computePairs('q')} />
+                <p><MathJax inline dynamic>{mathify('p[n]/q[n]')}</MathJax></p>
+                <ScatterPlot id="p_over_q" data={computePairs('p_over_q')} />
+                <p>The rate of convergence for this Polynomial Continued Fraction (in digits per step): </p>
+                <ScatterPlot id="error_slope_chart" data={computePairs('error_slope')} />
+                <p>Error</p>
+                <ScatterPlot id="error" data={computePairs('error')} />
+                <p>
 				Delta is a measure of the irrationality of a number (read more about it{' '}
-                <a href="https://www.ramanujanmachine.com/the-mathematics-of-polynomial-continued-fractions/irrationality-testing/">
+                    <a href="https://www.ramanujanmachine.com/the-mathematics-of-polynomial-continued-fractions/irrationality-testing/">
 					here
-                </a>
+                    </a>
 				). The given Polynomial Continued Fraction produces the following finite-depth estimations
 				for Delta:
-            </p>
-            <ScatterPlot id="delta_chart" data={computePairs('delta')} />
+                </p>
+                <ScatterPlot id="delta_chart" data={computePairs('delta')} />
+                <p><MathJax inline dynamic>{mathify('Delta n')}</MathJax></p>
+                <ScatterPlot id="delta_n_chart" data={computePairs('delta_n')} />
+            </MathJaxContext>
             <button
                 onClick={() => {
                     toggleDisplay();
