@@ -15,6 +15,7 @@
 	"scripts": {
 		"start": "vite",
 		"build": "tsc && vite build",
+		"lint": "eslint --fix src/**/*.ts*",
 		"serve": "vite preview"
 	},
 	"eslintConfig": {
