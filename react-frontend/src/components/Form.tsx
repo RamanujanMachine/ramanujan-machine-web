@@ -89,7 +89,7 @@ function Form() {
                         </sub>{' '}
 						polynomials below. They will define a continued fraction of the form:
                     </p>
-                    <img src="pcf.png" alt="polynomial continued fraction template pretty printed" />
+                    <div className="image-parent"><img src="pcf.png" alt="polynomial continued fraction template pretty printed" /></div>
                     <p>
 						Which will then be calculated up to depth <i>n</i>.
                     </p>

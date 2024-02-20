@@ -17,7 +17,7 @@ type WolframResult = {
 
 function Charts({ results = {}, toggleDisplay }: ChartProps) {
 	
-    const [wolframResults, setWolframResults] = useState<WolframResult[]>([]);
+    const [wolframResults, setWolframResults] = useState<WolframResult[]>();
     const config = {
         tex: {
             inlineMath: [["$", "$"]],
@@ -90,33 +90,44 @@ function Charts({ results = {}, toggleDisplay }: ChartProps) {
     return (
         <div className="chart-container">
             <MathJaxContext config={config} src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
-                <p>This is the value of the Polynomial Continued Fraction:</p>
-                <p className="center-text">{trimLimit()}</p>
-                <p>It seems to converge to:<br/><br/> <MathJax inline dynamic>{computeValue()}</MathJax></p>
-                { wolframResults && wolframResults.length > 0 ? (
-                    <div>
-                        <p className="center-text"><i>or</i></p>
-                        <p><MathJax inline dynamic>{wolframValue(wolframResults[0].plaintext)}</MathJax></p>
+                <div>
+                    <p>This is the value of the Polynomial Continued Fraction:</p>
+                    <div className="limit-container"><p className="center-text">{trimLimit()}</p></div>
+                    <p className="footnote">
+                        <i>
+                    Note: the limit is estimated to high confidence using a PSLQ algorithm, but this is not a proof.
+                        </i>
+                    </p>
+                </div>
+                <div className="full-width top-padding">
+                    <p className="center-content">It seems to converge to:</p>
+                    <div className="closed-form-container">
+                        <div className="closed-form">
+                            <MathJax inline dynamic>{computeValue()}</MathJax>
+                        </div>
+                        {wolframResults?.map((r:WolframResult) => (
+                            <div className="closed-form" key={r.plaintext}>
+                                <p><MathJax inline dynamic>{wolframValue(r.plaintext)}</MathJax></p>
+                            </div>
+                        ))}
                     </div>
-                ):''}
+                </div>
             </MathJaxContext>
-            <i>
-                <sub>
-					Note: the limit is estimated to high confidence using a PSLQ algorithm, but this is not a
-					proof.
-                </sub>
-            </i>
-            <p>The rate of convergence for this Polynomial Continued Fraction (in digits per step): </p>
-            <ScatterPlot id="error_chart" data={computePairs('error_deriv')} />
-            <p>
+            <div className="top-padding">
+                <p>The rate of convergence for this Polynomial Continued Fraction (in digits per step): </p>
+                <ScatterPlot id="error_chart" data={computePairs('error_deriv')} />
+            </div>
+            <div className="top-padding">
+                <p>
 				Delta is a measure of the irrationality of a number (read more about it{' '}
-                <a href="https://www.ramanujanmachine.com/the-mathematics-of-polynomial-continued-fractions/irrationality-testing/">
+                    <a href="https://www.ramanujanmachine.com/the-mathematics-of-polynomial-continued-fractions/irrationality-testing/">
 					here
-                </a>
+                    </a>
 				). The given Polynomial Continued Fraction produces the following finite-depth estimations
 				for Delta:
-            </p>
-            <ScatterPlot id="delta_chart" data={computePairs('delta')} />
+                </p>
+                <ScatterPlot id="delta_chart" data={computePairs('delta')} />
+            </div>
             <button
                 onClick={() => {
                     toggleDisplay();
