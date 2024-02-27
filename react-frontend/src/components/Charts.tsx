@@ -71,7 +71,6 @@ function Charts({ results = {}, toggleDisplay }: ChartProps) {
             return `$$${mathy}$$`;
         } catch(e) {
             console.log(`failed to parse ${cleanInput}`);
-            return '(unparseable result)';
         }
     };
 
