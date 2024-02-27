@@ -19,7 +19,7 @@ jobs:
         uses: actions/checkout@v4
       - name: "Install dependency and run dependency check"
         working-directory: ./react-frontend
-        run: npm install depcheck -g && depcheck --ignores "typescript,@types/node,eslint,prettier,jest,@types/jest"       
+        run: npm install depcheck -g && depcheck --ignores "typescript,@types/node,eslint,prettier,jest,@types/jest,stylelint"       
   run-cypress-tests:
     runs-on: ubuntu-latest
     name: "Run Cypress Tests"
