@@ -274,6 +274,7 @@ div.closed-form-container {
 }
 div.closed-form {
 	padding: 0px 20px;
+	margin: 0.5rem;
 	background-color: var(--muted-light);
 	border-radius: var(--radius);
 }

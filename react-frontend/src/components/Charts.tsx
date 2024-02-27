@@ -43,7 +43,6 @@ function Charts({ results = {}, toggleDisplay }: ChartProps) {
             return `$$${mathy}$$`;
         } catch(e) {
             console.log(`failed to parse ${input}`);
-            return '(unparseable result)';
         }
     };
 
@@ -56,8 +55,17 @@ function Charts({ results = {}, toggleDisplay }: ChartProps) {
     };
 
     const wolframValue = (input: string) => {
+        if(input.indexOf('near') > -1) return;
         // wolfram regurgitates the value provided with an approx symbol - truncating
-        const cleanInput = input.indexOf('≈') >= 0 ? input.substring(0, input.indexOf('≈')) : input;
+        let cleanInput = input.indexOf('≈') >= 0 ? input.substring(0, input.indexOf('≈')) : input;
+        // replace root of if it wraps a sub expression in parens first since it's a more specific match
+        if (cleanInput.indexOf('root of (') > -1) {
+            cleanInput.replace(/root\sof\s\(([^)]+)\)(.*)/g, 'sqrt($1)$2');
+        }
+        // then go after the entire expression
+        if (cleanInput.indexOf('root of ') > -1) {
+            cleanInput.replace(/root\sof\s(.*)/g, 'sqrt($1)');
+        }
         try { 
             const mathy = parse(cleanInput).toTex();
             return `$$${mathy}$$`;
