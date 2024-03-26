@@ -4,20 +4,18 @@ import sys
 import traceback
 
 import mpmath
-import ramanujan
-import sympy
 from LIReC.db.access import db
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from sympy import sympify, Symbol
 from sympy.core.numbers import Infinity
 
 import constants
 import logger
-from graph_utils import delta_coordinates, error_coordinates, slope_of_error_coordinates
-from input import Input, convert, Expression
-from math_utils import generalized_computed_values, simple_computed_values
+from graph_utils import (delta_coordinates, slope_of_error_coordinates, error_coordinates,
+                         Point2D, reduced_delta_coordinates, error_log_coordinates)
+from input import Input, Expression, parse
+from math_utils import generalized_computed_values, simple_computed_values, laurent, assess_convergence
 from wolfram_client import WolframClient
 
 sys.set_int_max_str_digits(0)
@@ -44,19 +42,6 @@ app.add_middleware(CORSMiddleware,
                    allow_headers=["*"])
 
 
-def parse(data: Input) -> tuple[sympy.core, sympy.core, sympy.core, Symbol]:
-    """
-    Process user inputs into math expressions
-    :param data: User form inputs
-    :return: tuple including p/q, simplified q and the symbol/variable used in these expressions
-    """
-    x = Symbol(data.symbol, real=True)
-    a = sympify(convert(data.a), {data.symbol: x}) if (len(data.symbol) == 1) else sympify(convert(data.a))
-    b = sympify(convert(data.b), {data.symbol: x}) if (len(data.symbol) == 1) else sympify(convert(data.b))
-    expression = a / b
-    return expression, a, b, x
-
-
 @app.post("/analyze")
 async def analyze(request: Request):
     """
@@ -69,33 +54,63 @@ async def analyze(request: Request):
 
     try:
         data = Input(**(await request.json()))
-        (expression, a, b, symbol) = parse(data)
-        pcf = ramanujan.pcf.PCF(str(a), str(b))
-        limit = mpmath.mpf(pcf.limit(depth=data.i))
-        logger.debug(f"PCF limit() returned: {limit}")
-        computed_values = db.identify(values=[limit], wide_search=True)
-        for m in computed_values:
-            logger.debug(f"identify returned: {m}")
+        (a_func, a, b_func, b, symbol) = parse(data)
+
+        if len(data.symbol) > 0:
+            is_convergent = assess_convergence(laurent(a, b, symbol), symbol)
+            # short circuit if the preliminary test fails
+            if is_convergent is False:
+                response = JSONResponse(content={"is_convergent": is_convergent}, status_code=200)
+                return response
+
         # per the link below, "when bi = 1 (the partial numerator) for all i the expression is called a simple continued
         # fraction"
         # b here is the partial numerator (a and b are often used interchangeably which may lead to confusion when there
-        # is no associated image of the fraction)
+        # is no associated image of the continued fraction)
         # https://en.wikipedia.org/wiki/Continued_fraction#Basic_formula
         if data.b == "1":
-            (values, denom_values) = simple_computed_values(a, symbol)
+            (values, num_values, denom_values) = simple_computed_values(a_func, iterations=data.i)
         else:
             # generalized continued fractions, where the partial numerator has its own formula and is not equal to 1
             # https://en.wikipedia.org/wiki/Generalized_continued_fraction
-            (values, denom_values) = generalized_computed_values(a, b, symbol)
+            (values, num_values, denom_values) = generalized_computed_values(a_func, b_func, iterations=data.i)
+
+        limit = values[next(reversed(values))]
+        logger.debug(f"last convergent / limit: {limit}")
+
+        computed_values = db.identify(values=[str(limit)], wide_search=True)
+        for m in computed_values:
+            logger.debug(f"identify returned: {m}")
+
+        error = error_coordinates(values, limit)
+        error_log = error_log_coordinates(error, values, limit)
         body = {
-            "expression": json.dumps(str(expression)),
             "limit": json.dumps("Infinity" if type(limit) is Infinity else str(limit)),
-            "error": json.dumps(error_coordinates(values, limit)),
-            "error_deriv": json.dumps(slope_of_error_coordinates(values, limit)),
+            "error": json.dumps(error),
             "delta": json.dumps(delta_coordinates(values, denom_values, limit)),
             "converges_to": json.dumps(str(computed_values[0] if len(computed_values) > 0 else None))
         }
-        logger.debug(f"Response: {body}")
+
+        if data.debug:
+            body["a"] = json.dumps(
+                [Point2D(x=n, y=str(
+                    a.evalf(subs={symbol: n},
+                            n=constants.PRECISION,
+                            strict=True,
+                            verbose=constants.VERBOSE_EVAL))) for n in range(0, data.i)]),
+            body["b"] = json.dumps(
+                [Point2D(x=n, y=str(
+                    b.evalf(subs={symbol: n},
+                            n=constants.PRECISION,
+                            strict=True,
+                            verbose=constants.VERBOSE_EVAL))) for n in range(0, data.i)]),
+            body["p"] = json.dumps([Point2D(x=i, y=str(p)) for i, p in enumerate(num_values)]),
+            body["q"] = json.dumps([Point2D(x=i, y=str(q)) for i, q in enumerate(denom_values)]),
+            body["p_over_q"] = json.dumps([Point2D(x=i, y=str(pq)) for i, pq in enumerate(values)]),
+            body["error_log"] = json.dumps(error_log),
+            body["error_slope"] = json.dumps(slope_of_error_coordinates(error)),
+            body["reduced_delta"] = json.dumps(reduced_delta_coordinates(values, num_values, denom_values, limit))
+
         response = JSONResponse(content=body)
         return response
 

@@ -24,14 +24,13 @@ body {
 	text-align: center;
 	width: 100%;
 	height: 100%;
-
 }
 div.body {
 	width: auto;
 	height: auto;
 	background-color: var(--muted);
 	overflow-y: auto;
-	height:90%;
+	height: 90%;
 }
 /* colors and other universal defaults */
 :root {
@@ -149,13 +148,15 @@ button {
 	border-color: var(--muted);
 	border-width: thin;
 	border-style: solid;
-	width: fit-content;
+	min-width: 130px;
 	background-color: var(--muted);
 	border-radius: var(--radius);
 	cursor: pointer;
 	margin-top: 2rem;
 	margin-left: auto;
 	margin-right: auto;
+	display: flex;
+	justify-content: center;
 }
 button:hover {
 	border-color: var(--accent);
@@ -263,7 +264,7 @@ div.chart-container {
 	opacity: 100%;
 }
 .center-text {
-	text-align:center;
+	text-align: center;
 }
 div.closed-form-container {
 	display: flex;
@@ -285,8 +286,33 @@ p.footnote {
 	width: 100%;
 }
 .center-content {
-	text-align:center;
+	text-align: center;
 }
 .top-padding {
 	padding-top: 1.5rem;
+}
+.plot-container {
+	padding-left: 20px;
+}
+.spinner {
+	flex: 1;
+	width: 1.5rem;
+	aspect-ratio: 1.154;
+	--_g: no-repeat radial-gradient(farthest-side, #fff 90%, #0000);
+	background:
+		var(--_g) 50% 0,
+		var(--_g) 0 100%,
+		var(--_g) 100% 100%;
+	background-size: 30% calc(30% * 1.154);
+	animation: l16 1s infinite;
+	margin-right: 0.5rem;
+}
+@keyframes l16 {
+	50%,
+	100% {
+		background-position:
+			100% 100%,
+			50% 0,
+			0 100%;
+	}
 }
