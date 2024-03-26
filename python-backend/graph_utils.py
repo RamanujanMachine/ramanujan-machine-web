@@ -1,6 +1,6 @@
 """Utility functions that generate graphable coordinate pairs for the frontend"""
 import logging
-from typing import TypedDict
+from typing import TypedDict, OrderedDict
 
 import mpmath
 import sympy
@@ -13,52 +13,90 @@ logger = logging.getLogger('rm_web_app')
 
 
 class Point2D(TypedDict):
+    """
+    a type used to store coordinate pairs
+    """
     x: int
     y: str
 
 
-def error_coordinates(values: list[mpmath.mpf], limit: mpmath.mpf) -> list[Point2D]:
+def error_coordinates(values: OrderedDict[int, mpmath.mpf], limit: mpmath.mpf) -> list[Point2D]:
     """
-    graph coords for the error of an expression log(|expression - L|)
+    graph coords for the error of an expression: |expression - L|
     :param values: computed values for continued fraction
     :param limit: the limit of the expression as computed by PCF(a_n, b_n).limit()
     :return: array of [x,y] pairs for graphing purposes
     """
     x_y_pairs = []
-    for i in range(0, len(values)):
-        if values[i] is not None:
+    for n in values.keys():
+        if n >= 1 and values[n] is not None:
             # taking log 10 gives us the order of magnitude of the difference -  the number of zeros after the decimal
             # which is a gauge of the proximity of the value at n to the "limit"
-            y_value = mpmath.log10(abs(values[i] - limit))
-            if i <= DEBUG_LINES:
-                logger.debug(f"Error {i} {values[i]} difference: {values[i] - limit} "
-                             f"abs: {abs(values[i] - limit)} log10: {y_value}")
+            y_value = mpmath.fabs(mpmath.fsub(values[n], limit))
 
-            x_y_pairs.append(Point2D(x=i, y=str(y_value)))
+            if mpmath.almosteq(values[n], limit):
+                logger.debug(f"Precision exhausted - difference is zero (string comparison)")
+                break
+
+            if n <= DEBUG_LINES:
+                logger.debug(f"Error at {n} |{values[n]}-{limit}| = {y_value}")
+
+            x_y_pairs.append(Point2D(x=n, y=str(y_value)))
 
     return x_y_pairs
 
 
-def slope_of_error_coordinates(values: list[mpmath.mpf], limit: mpmath.mpf) -> list[Point2D]:
+def error_log_coordinates(error_values: list[Point2D],
+                          values: OrderedDict[int, mpmath.mpf],
+                          limit: mpmath.mpf) -> list[Point2D]:
     """
-    graph coords for the error of an expression log(|expression - L|)
+    graph coords for the error log (i.e. digits of precision) of an expression: |log_10(|expression - L|)|
+    :param error_values: output of error_coordinates()
     :param values: computed values for continued fraction
     :param limit: the limit of the expression as computed by PCF(a_n, b_n).limit()
     :return: array of [x,y] pairs for graphing purposes
     """
     x_y_pairs = []
-    error_vals = error_coordinates(values, limit)
-    for i in range(1, len(error_vals)):
-        y_value = mpmath.mpf(error_vals[i]['y']) - mpmath.mpf(error_vals[i - 1]['y'])
-        if i <= DEBUG_LINES:
-            logger.debug(f"error slope at {i}: {y_value}")
+    for i in range(0, len(error_values) - 1):
+        if values[i] is not None and str(error_values[i]['y']) != '0.0':
+            # taking log 10 gives us the order of magnitude of the difference -  the number of zeros after the decimal
+            # which is a gauge of the proximity of the value at n to the "limit"
+            n = error_values[i]['x']
+            y_value = mpmath.fabs(mpmath.log10(error_values[i]['y']))
 
-        x_y_pairs.append(Point2D(x=i, y=str(y_value)))
+            if str(error_values[i]['y']) == '0.0':
+                logger.debug(f"cannot take log10 of zero")
+
+            if not mpmath.isinf(y_value):
+                if i <= DEBUG_LINES:
+                    logger.debug(f"log10 error at {n} |log10(|{values[n]}-{limit}|)| = {y_value}")
+                x_y_pairs.append(Point2D(x=n, y=str(y_value)))
 
     return x_y_pairs
 
 
-def delta_coordinates(values: list[mpmath.mpf], q_values: list[mpmath.mpf], limit: mpmath.mpf) -> list[Point2D]:
+def slope_of_error_coordinates(error_values: list[Point2D]) -> list[Point2D]:
+    """
+    graph coords for the slope of the error of an expression: (y_2 - y_1) / (x_2 - x_1)
+    (where the denom is always 1, so we don't bother computing it)
+    :param error_values: computed error values from error_coordinates()
+    :return: array of [x,y] pairs for graphing purposes
+    """
+    x_y_pairs = []
+    for i in range(1, len(error_values) - 1):
+        n = error_values[i]['x']
+        y_value = mpmath.fabs(mpmath.fsub(error_values[i]['y'], error_values[i - 1]['y']))
+        if i <= DEBUG_LINES:
+            logger.debug(f"slope of error at {n}: {y_value}")
+
+        x_y_pairs.append(Point2D(x=n, y=str(y_value)))
+
+    return x_y_pairs
+
+
+def delta_coordinates(values: OrderedDict[int, mpmath.mpf],
+                      q_values: OrderedDict[int, mpmath.mpf],
+                      limit: mpmath.mpf) -> list[Point2D]:
     """
     graph coords for the error delta for an expression -1 * (log(|Pn/Qn - L|) / log(Qn)) - 1
     :param values: computed values for continued fraction
@@ -67,20 +105,88 @@ def delta_coordinates(values: list[mpmath.mpf], q_values: list[mpmath.mpf], limi
     :return: array of [x,y] pairs for graphing purposes
     """
     x_y_pairs = []
+    # |\frac{p_n}{q_n} - L|
     # graph coords of error delta: -1 * (log(|Pn/Qn - L|) / log(Qn)) - 1
-    for i in range(1, min(len(values), len(q_values))):
+    for n in values.keys():
         # we test for values that would generate irrational results or exceptions
         # e.g. divide by zero when taking log10 of 1
         # taking log 10 gives us the order of magnitude of the difference -  the number of zeros after the decimal
         # which is a gauge of the proximity of the value at n to the "limit"
         # in this case we are then comparing that precision to the precision of the denominator
-        if values[i] is not None and q_values[i] is not None and q_values[i] > 0 and q_values[i] != 1:
-            y_value = (mpmath.mpf(-1) *
-                       (mpmath.log10(abs(values[i] - limit)) / mpmath.log10(q_values[i]))
-                       - mpmath.mpf(1))
-            if i <= DEBUG_LINES:
-                logger.debug(f"Delta {i} {y_value}")
+        if (n >= 1
+                and values[n] is not None
+                and q_values[n] is not None
+                and q_values[n] > 0
+                and q_values[n] != 1
+                and str(q_values[n]) != '0.0' and str(values[n] - limit) != '0.0'):
 
-            x_y_pairs.append(Point2D(x=i, y=str(y_value)))
+            if mpmath.almosteq(limit, values[n]):
+                break
+
+            error = mpmath.log10(mpmath.fabs(mpmath.fsub(values[n], limit)))
+            q = mpmath.log10(mpmath.fabs(q_values[n]))
+
+            if mpmath.almosteq(q, mpmath.mpf(0)):
+                break
+
+            y_value = mpmath.fsub(-1, (mpmath.fdiv(error, q)))
+
+            if not mpmath.isinf(y_value):
+                if n <= DEBUG_LINES:
+                    logger.debug(
+                        f"Delta at {n}: - 1 - log10(|{values[n]} - {limit}|) / log10(|{q_values[n]}|) = {y_value}")
+                x_y_pairs.append(Point2D(x=n, y=str(y_value)))
+
+    return x_y_pairs
+
+
+def reduced_delta_coordinates(values: OrderedDict[int, mpmath.mpf],
+                              p_values: OrderedDict[int, mpmath.mpf],
+                              q_values: OrderedDict[int, mpmath.mpf],
+                              limit: mpmath.mpf) -> list[Point2D]:
+    """
+    graph coords for the error delta for an expression -1 * (log(|Pn/Qn - L|) / log(Qn)) - 1
+    :param values: computed values for continued fraction
+    :param limit: the limit of the expression as computed by PCF(a_n, b_n).limit()
+    :param p_values: computed values for continued fraction - numerator only
+    :param q_values: computed values for continued fraction - denominator only
+    :return: array of [x,y] pairs for graphing purposes
+    """
+    x_y_pairs = []
+    # graph coords of error delta: -1 * (log(|Pn/Qn - L|) / log(Qn)) - 1
+    for n in values.keys():
+        # we test for values that would generate irrational results or exceptions
+        # e.g. divide by zero when taking log10 of 1
+        # taking log 10 gives us the order of magnitude of the difference -  the number of zeros after the decimal
+        # which is a gauge of the proximity of the value at n to the "limit"
+        # in this case we are then comparing that precision to the precision of the denominator
+        if (n >= 1
+                and values[n] is not None
+                and q_values[n] is not None
+                and q_values[n] > 0
+                and q_values[n] != 1
+                and str(q_values[n]) != '0.0'
+                and str(values[n] - limit) != '0.0'):
+            # reduced_q = mpmath.fabs(mpmath.fdiv(q_values[n], gcd))
+            # error = mpmath.log10(mpmath.fabs(mpmath.fsub(values[n], limit)))
+            # y_value = mpmath.fsub(-1, mpmath.fdiv(error, mpmath.log10(reduced_q)))
+
+            # gcd = cpython_gcd(p_values[n], q_values[n])
+            gcd = sympy.gcd(sympy.Rational(str(p_values[n])), sympy.Rational(str(q_values[n])))
+            if mpmath.almosteq(gcd, mpmath.mpf(0)):
+                break
+
+            reduced_q = mpmath.fabs(mpmath.fdiv(q_values[n], gcd))
+            if mpmath.almosteq(limit, values[n]):
+                break
+
+            y_value = mpmath.fsub(-1, mpmath.log(mpmath.fabs(mpmath.fsub(limit, values[n])), reduced_q))
+
+            if not mpmath.isinf(y_value):
+                if n <= DEBUG_LINES:
+                    logger.debug(
+                        f"Reduced delta at {n}: -1 - (log10(|{values[n]} - {limit}|) / log10(|{q_values[n]} / {gcd}|)) "
+                        f"= {y_value}")
+                x_y_pairs.append(Point2D(x=n, y=str(y_value)))
 
     return x_y_pairs
