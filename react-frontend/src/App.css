@@ -304,10 +304,10 @@ p.footnote {
 		var(--_g) 0 100%,
 		var(--_g) 100% 100%;
 	background-size: 30% calc(30% * 1.154);
-	animation: l16 1s infinite;
+	animation: spin 1s infinite;
 	margin-right: 0.5rem;
 }
-@keyframes l16 {
+@keyframes spin {
 	50%,
 	100% {
 		background-position:

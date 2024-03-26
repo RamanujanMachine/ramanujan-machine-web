@@ -12,10 +12,7 @@ const ScatterPlot = ({ id, data }: { id: string; data: CoordinatePair[] }) => {
 	useEffect(() => {
 		if (data && data.length > 0) {
 			const filteredData = data.filter((point) => !isNaN(parseFloat(point.y)));
-			for (let datum of filteredData) {
-				if (datum.x < 220)
-					console.debug(id, datum.x, datum.y, parseFloat(datum.y), isNaN(parseFloat(datum.y)));
-			}
+
 			// select and clear DOM container
 			const svg = d3.select(`#${id}`);
 			svg.selectAll('*').remove();
