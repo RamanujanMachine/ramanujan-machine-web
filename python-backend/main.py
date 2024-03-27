@@ -54,6 +54,7 @@ async def analyze(request: Request):
 
     try:
         data = Input(**(await request.json()))
+        iterations = data.i
         (a_func, a, b_func, b, symbol) = parse(data)
 
         if len(data.symbol) > 0:
@@ -69,11 +70,11 @@ async def analyze(request: Request):
         # is no associated image of the continued fraction)
         # https://en.wikipedia.org/wiki/Continued_fraction#Basic_formula
         if data.b == "1":
-            (values, num_values, denom_values) = simple_computed_values(a_func, iterations=data.i)
+            (values, num_values, denom_values) = simple_computed_values(a_func, iterations=iterations)
         else:
             # generalized continued fractions, where the partial numerator has its own formula and is not equal to 1
             # https://en.wikipedia.org/wiki/Generalized_continued_fraction
-            (values, num_values, denom_values) = generalized_computed_values(a_func, b_func, iterations=data.i)
+            (values, num_values, denom_values) = generalized_computed_values(a_func, b_func, iterations=iterations)
 
         limit = values[next(reversed(values))]
         logger.debug(f"last convergent / limit: {limit}")
@@ -82,12 +83,12 @@ async def analyze(request: Request):
         for m in computed_values:
             logger.debug(f"identify returned: {m}")
 
-        error = error_coordinates(values, limit)
-        error_log = error_log_coordinates(error, values, limit)
+        error = error_coordinates(values, limit, iterations)
+        error_log = error_log_coordinates(error, values, limit, iterations)
         body = {
             "limit": json.dumps("Infinity" if type(limit) is Infinity else str(limit)),
             "error": json.dumps(error),
-            "delta": json.dumps(delta_coordinates(values, denom_values, limit)),
+            "delta": json.dumps(delta_coordinates(values, denom_values, limit, iterations)),
             "converges_to": json.dumps(str(computed_values[0] if len(computed_values) > 0 else None))
         }
 
@@ -97,19 +98,20 @@ async def analyze(request: Request):
                     a.evalf(subs={symbol: n},
                             n=constants.PRECISION,
                             strict=True,
-                            verbose=constants.VERBOSE_EVAL))) for n in range(0, data.i)]),
+                            verbose=constants.VERBOSE_EVAL))) for n in range(0, iterations)]),
             body["b"] = json.dumps(
                 [Point2D(x=n, y=str(
                     b.evalf(subs={symbol: n},
                             n=constants.PRECISION,
                             strict=True,
-                            verbose=constants.VERBOSE_EVAL))) for n in range(0, data.i)]),
+                            verbose=constants.VERBOSE_EVAL))) for n in range(0, iterations)]),
             body["p"] = json.dumps([Point2D(x=i, y=str(p)) for i, p in enumerate(num_values)]),
             body["q"] = json.dumps([Point2D(x=i, y=str(q)) for i, q in enumerate(denom_values)]),
             body["p_over_q"] = json.dumps([Point2D(x=i, y=str(pq)) for i, pq in enumerate(values)]),
             body["error_log"] = json.dumps(error_log),
-            body["error_slope"] = json.dumps(slope_of_error_coordinates(error)),
-            body["reduced_delta"] = json.dumps(reduced_delta_coordinates(values, num_values, denom_values, limit))
+            body["error_slope"] = json.dumps(slope_of_error_coordinates(error, iterations)),
+            body["reduced_delta"] = json.dumps(
+                reduced_delta_coordinates(values, num_values, denom_values, limit, iterations))
 
         response = JSONResponse(content=body)
         return response
