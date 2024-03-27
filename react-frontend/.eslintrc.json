@@ -1,5 +1,5 @@
 {
-	"settings":{
+	"settings": {
 		"react": {
 			"version": "detect"
 		}
@@ -10,9 +10,12 @@
 	},
 	"extends": ["eslint:recommended", "plugin:react/recommended"],
 	"rules": {
-		"no-unused-vars": ["warn", { "vars": "all", "args": "after-used", "ignoreRestSiblings": false }],
+		"no-unused-vars": [
+			"warn",
+			{ "vars": "all", "args": "after-used", "ignoreRestSiblings": false }
+		],
 		"key-spacing": ["error", { "afterColon": true }],
-		"@stylistic/js/indent": ["error", 4]
+		"@stylistic/js/indent": ["error", "tab"]
 	},
 	"parser": "@typescript-eslint/parser",
 	"parserOptions": {
