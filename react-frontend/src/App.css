@@ -152,7 +152,7 @@ button {
 	background-color: var(--muted);
 	border-radius: var(--radius);
 	cursor: pointer;
-	margin-top: 2rem;
+	margin-top: 1rem;
 	margin-left: auto;
 	margin-right: auto;
 	display: flex;
@@ -289,7 +289,7 @@ p.footnote {
 	text-align: center;
 }
 .top-padding {
-	padding-top: 1.5rem;
+	padding-top: 1rem;
 }
 .plot-container {
 	padding-left: 20px;
@@ -315,4 +315,7 @@ p.footnote {
 			50% 0,
 			0 100%;
 	}
+}
+svg {
+	margin: 20px 10px 20px 20px;
 }

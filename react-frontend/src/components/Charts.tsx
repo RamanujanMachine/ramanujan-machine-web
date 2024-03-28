@@ -158,16 +158,6 @@ function Charts({ results = {}, toggleDisplay, showDebugCharts = false }: ChartP
 					</p>
 					<ScatterPlot id="error_chart" data={computePairs('error')} />
 				</div>
-				{showDebugCharts ? (
-					<>
-						Error Slope
-						<div className="top-padding plot-container">
-							<ScatterPlot id="error_slope_chart" data={computePairs('error_slope')} />
-						</div>
-					</>
-				) : (
-					''
-				)}
 				<div className="top-padding plot-container">
 					<p>
 						Delta is a measure of the irrationality of a number (read more about it{' '}
@@ -178,6 +168,7 @@ function Charts({ results = {}, toggleDisplay, showDebugCharts = false }: ChartP
 						estimations for Delta:
 					</p>
 					<ScatterPlot id="delta_chart" data={computePairs('delta')} />
+					<ScatterPlot id="reduced_delta_chart" data={computePairs('reduced_delta')} />
 				</div>
 			</MathJaxContext>
 			<button

@@ -12,8 +12,7 @@ from sympy.core.numbers import Infinity
 
 import constants
 import logger
-from graph_utils import (delta_coordinates, slope_of_error_coordinates, error_coordinates,
-                         Point2D, reduced_delta_coordinates, error_log_coordinates)
+from graph_utils import (Point2D, chart_coordinates)
 from input import Input, Expression, parse
 from math_utils import generalized_computed_values, simple_computed_values, laurent, assess_convergence
 from wolfram_client import WolframClient
@@ -83,12 +82,16 @@ async def analyze(request: Request):
         for m in computed_values:
             logger.debug(f"identify returned: {m}")
 
-        error = error_coordinates(values, limit, iterations)
-        error_log = error_log_coordinates(error, values, limit, iterations)
+        (error_data, error_log_data, delta_data, reduced_delta_data) = chart_coordinates(values,
+                                                                                         num_values,
+                                                                                         denom_values,
+                                                                                         limit, iterations=iterations)
+
         body = {
             "limit": json.dumps("Infinity" if type(limit) is Infinity else str(limit)),
-            "error": json.dumps(error),
-            "delta": json.dumps(delta_coordinates(values, denom_values, limit, iterations)),
+            "error": json.dumps(error_log_data),
+            "delta": json.dumps(delta_data),
+            "reduced_delta": json.dumps(reduced_delta_data),
             "converges_to": json.dumps(str(computed_values[0] if len(computed_values) > 0 else None))
         }
 
@@ -107,11 +110,7 @@ async def analyze(request: Request):
                             verbose=constants.VERBOSE_EVAL))) for n in range(0, iterations)]),
             body["p"] = json.dumps([Point2D(x=i, y=str(p)) for i, p in enumerate(num_values)]),
             body["q"] = json.dumps([Point2D(x=i, y=str(q)) for i, q in enumerate(denom_values)]),
-            body["p_over_q"] = json.dumps([Point2D(x=i, y=str(pq)) for i, pq in enumerate(values)]),
-            body["error_log"] = json.dumps(error_log),
-            body["error_slope"] = json.dumps(slope_of_error_coordinates(error, iterations)),
-            body["reduced_delta"] = json.dumps(
-                reduced_delta_coordinates(values, num_values, denom_values, limit, iterations))
+            body["p_over_q"] = json.dumps([Point2D(x=i, y=str(pq)) for i, pq in enumerate(values)])
 
         response = JSONResponse(content=body)
         return response
