@@ -62,7 +62,8 @@ async def chart_coordinates(values: dict[int, mpmath.mpf],
                 # taking log 10 gives us the order of magnitude of the difference -  the number of zeros after the decimal
                 # which is a gauge of the proximity of the value at n to the "limit"
                 # since these are tiny decimal values the log is negative, so we take the absolute value
-                error_log = mpmath.fabs(mpmath.log10(error))
+                # error_log = mpmath.fabs(mpmath.log10(error))
+                error_log = mpmath.log10(error)
 
                 if not mpmath.isinf(error_log):
                     if n <= DEBUG_LINES:
@@ -94,12 +95,12 @@ async def chart_coordinates(values: dict[int, mpmath.mpf],
 
                     reduced_q = mpmath.fabs(mpmath.fdiv(q_values[n], gcd))
 
-                    reduced_delta_y_value = mpmath.fsub(-1, error_log / reduced_q)
+                    reduced_delta_y_value = mpmath.fsub(-1, mpmath.log(error, reduced_q))
 
                     if not mpmath.isinf(reduced_delta_y_value):
                         if n <= DEBUG_LINES:
                             logger.debug(
-                                f"Reduced delta at {n}: - 1 - (log10(|{value} - {limit}|) / log10(|{q_values[n]} / {gcd}|)) "
+                                f"Reduced delta at {n}: - 1 - (log10(|{value} - {limit}|) / log10(|{q_values[n]} / {gcd}|))"
                                 f"= {reduced_delta_y_value}")
                         reduced_delta_x_y_pairs.append(Point2D(x=n, y=str(reduced_delta_y_value)))
 
