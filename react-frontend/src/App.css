@@ -39,14 +39,6 @@ div.body {
 	--dark-text: black;
 	--input-text: gray;
 	--light-text: white;
-	/*
-	Alt Color Scheme
-	--neutral:#06283b;
-	--contrast: #7c9f24;
-	--bright:#6598c7;
-	--accent: #d2ced1;
-	--muted:#326229;
-*/
 	--contrast: #058fb2;
 	--accent: #f9ae33;
 	--muted: rgb(71, 200, 235);
@@ -152,7 +144,7 @@ button {
 	background-color: var(--muted);
 	border-radius: var(--radius);
 	cursor: pointer;
-	margin-top: 2rem;
+	margin-top: 1rem;
 	margin-left: auto;
 	margin-right: auto;
 	display: flex;
@@ -289,10 +281,28 @@ p.footnote {
 	text-align: center;
 }
 .top-padding {
-	padding-top: 1.5rem;
+	padding-top: 1rem;
 }
 .plot-container {
 	padding-left: 20px;
+}
+.chart-spinner-container {
+	width: 100%;
+	min-height: 11rem;
+	padding-top: 3rem;
+	padding-bottom: 3rem;
+}
+.chart-spinner {
+	max-width: 5rem;
+	margin: auto;
+	aspect-ratio: 1.154;
+	--_g: no-repeat radial-gradient(farthest-side, var(--accent) 90%, #0000);
+	background:
+		var(--_g) 50% 0,
+		var(--_g) 0 100%,
+		var(--_g) 100% 100%;
+	background-size: 26% calc(26% * 1.154);
+	animation: spin 1s infinite;
 }
 .spinner {
 	flex: 1;
@@ -315,4 +325,7 @@ p.footnote {
 			50% 0,
 			0 100%;
 	}
+}
+svg {
+	margin: 20px 10px 20px 20px;
 }

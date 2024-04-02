@@ -1,14 +1,11 @@
 import React, { useEffect } from 'react';
 import * as d3 from 'd3';
+import { CoordinatePair } from '../lib/types';
 
-type CoordinatePair = {
-	x: number;
-	y: string;
-};
 const svg_width = 560,
 	svg_height = 400;
 
-const ScatterPlot = ({ id, data }: { id: string; data: CoordinatePair[] }) => {
+const ScatterPlot = ({ id, data }: { id: string; data?: CoordinatePair[] }) => {
 	useEffect(() => {
 		if (data && data.length > 0) {
 			const filteredData = data.filter((point) => !isNaN(parseFloat(point.y)));
@@ -29,7 +26,6 @@ const ScatterPlot = ({ id, data }: { id: string; data: CoordinatePair[] }) => {
 			const [minX, maxX] = d3.extent(filteredData, (d) => {
 				return d.x;
 			});
-			console.debug(`x min ${minX} x max ${maxX}`);
 
 			const xScale = d3
 				.scaleLinear()
@@ -37,7 +33,6 @@ const ScatterPlot = ({ id, data }: { id: string; data: CoordinatePair[] }) => {
 				.range([0, width - margin]);
 
 			const [minY, maxY] = d3.extent(filteredData, (d) => parseFloat(d.y));
-			console.debug(`y min ${minY} y max ${maxY}`);
 
 			const yScale = d3
 				.scaleLinear()
@@ -68,10 +63,14 @@ const ScatterPlot = ({ id, data }: { id: string; data: CoordinatePair[] }) => {
 		}
 	}, [data]);
 
-	return (
+	return data && data.length > 0 ? (
 		<svg width={svg_width} height={svg_height} id={id}>
 			<g></g>
 		</svg>
+	) : (
+		<div className="chart-spinner-container">
+			<div className="chart-spinner"></div>
+		</div>
 	);
 };
 

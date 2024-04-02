@@ -8,3 +8,5 @@ PORTS = ['5173', '80']
 DEBUG_LINES = 100
 # evalf allows for verbose output via param universally set to this:
 VERBOSE_EVAL = False
+# chunk size to send to front end via web socket when computing coordinate pairs
+BATCH_SIZE = 250

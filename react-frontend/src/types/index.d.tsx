@@ -1,7 +1,7 @@
 export {};
 
 declare global {
-    interface Window {
-        MathJax: any;
-    }
+	interface Window {
+		MathJax: any;
+	}
 }
