@@ -2,20 +2,17 @@ import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import PolynomialInput from './PolynomialInput';
 import Charts from './Charts';
+import { CoordinatePair } from '../lib/types';
 
 interface PostBody {
 	a: string;
 	b: string;
 	symbol: string | undefined;
 	i: number;
-	debug: boolean;
 }
 
 // setting this value to true will render a_n, b_n, and p_n/q_n for debugging purposes
 const SHOW_DEBUG_CHARTS = false;
-
-type XYPair = [number, number];
-type CoordinateList = XYPair[];
 
 function Form() {
 	const [iterationCount, setIterationCount] = useState(1000);
@@ -23,14 +20,27 @@ function Form() {
 	const [denominatorIsValid, setDenominatorValidity] = useState(false);
 	const [polynomialA, setPolynomialA] = useState('');
 	const [polynomialB, setPolynomialB] = useState('');
-	const [results, setResults] = useState<CoordinateList>([]);
 	const [showCharts, setShowCharts] = useState(false);
 	const [noConvergence, setNoConvergence] = useState(false);
 	const [waitingForResponse, setWaitingForResponse] = useState(false);
+	const [convergesTo, setConvergesTo] = useState('');
+	const [limit, setLimit] = useState('');
+	const [errorData, setErrorData] = useState<CoordinatePair[]>([]);
+	const [deltaData, setDeltaData] = useState<CoordinatePair[]>([]);
+	const [reducedDeltaData, setReducedDeltaData] = useState<CoordinatePair[]>([]);
+	const [webSocketReady, setWebSocketReady] = useState(false);
 
 	useEffect(() => {
 		document.getElementsByTagName('input')[0].focus();
 	}, []);
+
+	const resetState = function () {
+		setConvergesTo('');
+		setLimit('');
+		setErrorData([]);
+		setDeltaData([]);
+		setReducedDeltaData([]);
+	};
 
 	const onlyOneSymbolUsed = function () {
 		const matches = (polynomialA + polynomialB).matchAll(/([a-zA-Z])/g);
@@ -65,30 +75,67 @@ function Form() {
 		e.preventDefault();
 		setWaitingForResponse(true);
 		setNoConvergence(false);
-		const body: PostBody = {
-			a: polynomialA,
-			b: polynomialB,
-			symbol: polynomialA.match(/([a-zA-Z])/)?.[0] ?? polynomialB.match(/([a-zA-Z])/)?.[0] ?? '',
-			i: iterationCount,
-			debug: SHOW_DEBUG_CHARTS
+
+		let websocket = new WebSocket('ws://127.0.0.1:8000/data');
+
+		websocket.onopen = () => {
+			console.log('socket connection opened');
+			setWebSocketReady(true);
+
+			const body: PostBody = {
+				a: polynomialA,
+				b: polynomialB,
+				symbol: polynomialA.match(/([a-zA-Z])/)?.[0] ?? polynomialB.match(/([a-zA-Z])/)?.[0] ?? '',
+				i: iterationCount
+			};
+			websocket.send(JSON.stringify(body));
+			setWaitingForResponse(true);
 		};
-		axios
-			.post('/analyze', body)
-			.then((response) => {
-				setWaitingForResponse(false);
-				if (response.status == 200) {
-					if (response.data.converges_to) {
-						setResults(response.data);
-						setShowCharts(true);
-					} else {
-						setNoConvergence(true);
-					}
-				} else {
-					setShowCharts(false);
-					console.warn(response.data.error);
+
+		websocket.onerror = (e) => {
+			console.log('web socket error', e);
+			setWebSocketReady(false);
+		};
+
+		websocket.onclose = () => {
+			console.log('web socket closed');
+			setWebSocketReady(false);
+		};
+
+		websocket.onmessage = (evt) => {
+			setWaitingForResponse(false);
+			const message = JSON.parse(evt.data);
+			if (Object.hasOwn(message, 'limit')) {
+				setShowCharts(true);
+				setLimit(message.limit);
+			}
+			if (Object.hasOwn(message, 'is_convergent')) {
+				if (message.is_convergent !== false) {
+					setShowCharts(true);
+				} else if (message.is_convergent === false) {
+					setNoConvergence(true);
+					websocket.close();
+					return;
 				}
-			})
-			.catch((error) => console.log(error.toJSON()));
+			} else if (Object.hasOwn(message, 'converges_to')) {
+				setConvergesTo(JSON.parse(message.converges_to));
+			} else if (Object.hasOwn(message, 'error')) {
+				const incomingErrorData = JSON.parse(message.error);
+				if (incomingErrorData) {
+					setErrorData((previousData) => [...previousData, ...incomingErrorData]);
+				}
+			} else if (Object.hasOwn(message, 'delta')) {
+				const incomingDeltaData = JSON.parse(message.delta);
+				if (incomingDeltaData) {
+					setDeltaData((previousData) => [...previousData, ...incomingDeltaData]);
+				}
+			} else if (Object.hasOwn(message, 'reduced_delta')) {
+				const incomingRedDeltaData = JSON.parse(message.reduced_delta);
+				if (incomingRedDeltaData.length > 0) {
+					setReducedDeltaData((previousData) => [...previousData, ...incomingRedDeltaData]);
+				}
+			}
+		};
 	};
 
 	return (
@@ -157,11 +204,16 @@ function Form() {
 			{noConvergence ? <h3>The provided polynomials do not converge.</h3> : null}
 			{showCharts ? (
 				<Charts
+					limit={limit}
 					showDebugCharts={SHOW_DEBUG_CHARTS}
-					results={results}
+					convergesTo={convergesTo}
+					deltaData={deltaData}
+					errorData={errorData}
+					reducedDeltaData={reducedDeltaData}
 					toggleDisplay={() => {
 						setNoConvergence(false);
 						setShowCharts(!showCharts);
+						resetState();
 					}}></Charts>
 			) : null}
 		</div>

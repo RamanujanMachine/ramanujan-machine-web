@@ -155,7 +155,7 @@ def laurent(a: Number, b: Number, symbol: Symbol = None, term_count=2) -> str:
     return f'{result} + o({order})'
 
 
-def assess_convergence(series: str, symbol: Symbol):
+def assess_convergence(series: str, symbol: Symbol) -> bool:
     """
     Takes the result of the laurent series function and analyzes whether it suggests convergence
     """

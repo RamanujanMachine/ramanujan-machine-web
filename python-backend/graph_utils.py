@@ -1,11 +1,13 @@
 """Utility functions that generate graphable coordinate pairs for the frontend"""
+import json
 import logging
 from typing import TypedDict
 
 import mpmath
 import sympy
+from fastapi import WebSocket
 
-from constants import DEBUG_LINES
+from constants import DEBUG_LINES, BATCH_SIZE
 
 GRAPHABLE_TYPES = (int, float, sympy.core.numbers.Integer, sympy.core.numbers.Float)
 
@@ -20,11 +22,12 @@ class Point2D(TypedDict):
     y: str
 
 
-def chart_coordinates(values: dict[int, mpmath.mpf],
-                      p_values: dict[int, mpmath.mpf],
-                      q_values: dict[int, mpmath.mpf],
-                      limit: mpmath.mpf,
-                      iterations: int) -> tuple[list[Point2D], list[Point2D], list[Point2D], list[Point2D]]:
+async def chart_coordinates(values: dict[int, mpmath.mpf],
+                            p_values: dict[int, mpmath.mpf],
+                            q_values: dict[int, mpmath.mpf],
+                            limit: mpmath.mpf,
+                            iterations: int, websocket: WebSocket) -> tuple[
+    list[Point2D], list[Point2D], list[Point2D], list[Point2D]]:
     """
     graph coords for the error of an expression: |expression - L|
     :param values: computed values for continued fraction, p_n/q_n
@@ -99,5 +102,17 @@ def chart_coordinates(values: dict[int, mpmath.mpf],
                                 f"Reduced delta at {n}: - 1 - (log10(|{value} - {limit}|) / log10(|{q_values[n]} / {gcd}|)) "
                                 f"= {reduced_delta_y_value}")
                         reduced_delta_x_y_pairs.append(Point2D(x=n, y=str(reduced_delta_y_value)))
+
+        # incremental response - remember that xy pairs start at n=1 but index 0
+        if n % BATCH_SIZE == 0:
+            # sending chunk
+            await websocket.send_json({"error": json.dumps(log_error_x_y_pairs[n - BATCH_SIZE:n])})
+            await websocket.send_json({"delta": json.dumps(delta_x_y_pairs[n - BATCH_SIZE:n])})
+            await websocket.send_json({"reduced_delta": json.dumps(reduced_delta_x_y_pairs[n - BATCH_SIZE:n])})
+
+    # final chunk
+    await websocket.send_json({"error": json.dumps(log_error_x_y_pairs[n - n % BATCH_SIZE:])})
+    await websocket.send_json({"delta": json.dumps(delta_x_y_pairs[n - n % BATCH_SIZE:])})
+    await websocket.send_json({"reduced_delta": json.dumps(reduced_delta_x_y_pairs[n - n % BATCH_SIZE:])})
 
     return error_x_y_pairs, log_error_x_y_pairs, delta_x_y_pairs, reduced_delta_x_y_pairs
