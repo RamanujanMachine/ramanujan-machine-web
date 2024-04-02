@@ -124,8 +124,9 @@ async def data_socket(websocket: WebSocket):
         except WebSocketDisconnect:
             logger.debug("Websocket disconnected")
             break
-        except WebSocketException:
-            logger.debug("Websocket exception")
+        except WebSocketException as e:
+            logger.debug(f"Websocket exception {e}")
+            await websocket.close()
             break
 
-        await websocket.close()
+    await websocket.close()

@@ -90,19 +90,24 @@ async def chart_coordinates(values: dict[int, mpmath.mpf],
 
                 # compute reduced delta
                 gcd = sympy.gcd(sympy.Rational(str(p_values[n])), sympy.Rational(str(q_values[n])))
-
                 if not mpmath.almosteq(gcd, mpmath.mpf(0)):
+                    if n <= DEBUG_LINES:
+                        logger.debug(f"gcd {gcd}")
 
                     reduced_q = mpmath.fabs(mpmath.fdiv(q_values[n], gcd))
 
-                    reduced_delta_y_value = mpmath.fsub(-1, mpmath.log(error, reduced_q))
-
-                    if not mpmath.isinf(reduced_delta_y_value):
+                    if not mpmath.almosteq(reduced_q, mpmath.mpf(1)):
                         if n <= DEBUG_LINES:
-                            logger.debug(
-                                f"Reduced delta at {n}: - 1 - (log10(|{value} - {limit}|) / log10(|{q_values[n]} / {gcd}|))"
-                                f"= {reduced_delta_y_value}")
-                        reduced_delta_x_y_pairs.append(Point2D(x=n, y=str(reduced_delta_y_value)))
+                            logger.debug(f"reduced q {reduced_q}")
+                            
+                        reduced_delta_y_value = mpmath.fsub(-1, mpmath.log(error, reduced_q))
+
+                        if not mpmath.isinf(reduced_delta_y_value):
+                            if n <= DEBUG_LINES:
+                                logger.debug(
+                                    f"Reduced delta at {n}: - 1 - (log10(|{value} - {limit}|) / log10(|{q_values[n]} / {gcd}|))"
+                                    f"= {reduced_delta_y_value}")
+                            reduced_delta_x_y_pairs.append(Point2D(x=n, y=str(reduced_delta_y_value)))
 
         # incremental response - remember that xy pairs start at n=1 but index 0
         if n % BATCH_SIZE == 0:
