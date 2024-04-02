@@ -121,12 +121,12 @@ function Form() {
 				setConvergesTo(JSON.parse(message.converges_to));
 			} else if (Object.hasOwn(message, 'error')) {
 				const incomingErrorData = JSON.parse(message.error);
-				if (incomingErrorData) {
+				if (incomingErrorData.length > 0) {
 					setErrorData((previousData) => [...previousData, ...incomingErrorData]);
 				}
 			} else if (Object.hasOwn(message, 'delta')) {
 				const incomingDeltaData = JSON.parse(message.delta);
-				if (incomingDeltaData) {
+				if (incomingDeltaData.length > 0) {
 					setDeltaData((previousData) => [...previousData, ...incomingDeltaData]);
 				}
 			} else if (Object.hasOwn(message, 'reduced_delta')) {
@@ -205,7 +205,6 @@ function Form() {
 			{showCharts ? (
 				<Charts
 					limit={limit}
-					showDebugCharts={SHOW_DEBUG_CHARTS}
 					convergesTo={convergesTo}
 					deltaData={deltaData}
 					errorData={errorData}

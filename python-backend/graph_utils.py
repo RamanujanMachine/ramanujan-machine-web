@@ -114,5 +114,3 @@ async def chart_coordinates(values: dict[int, mpmath.mpf],
     await websocket.send_json({"error": json.dumps(log_error_x_y_pairs[n - n % BATCH_SIZE:])})
     await websocket.send_json({"delta": json.dumps(delta_x_y_pairs[n - n % BATCH_SIZE:])})
     await websocket.send_json({"reduced_delta": json.dumps(reduced_delta_x_y_pairs[n - n % BATCH_SIZE:])})
-
-    return error_x_y_pairs, log_error_x_y_pairs, delta_x_y_pairs, reduced_delta_x_y_pairs

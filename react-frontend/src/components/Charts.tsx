@@ -13,7 +13,6 @@ interface ChartProps {
 	deltaData?: CoordinatePair[];
 	reducedDeltaData?: CoordinatePair[];
 	toggleDisplay: () => void;
-	showDebugCharts: boolean;
 }
 
 type WolframResult = {
