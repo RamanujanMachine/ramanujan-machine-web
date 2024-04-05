@@ -263,7 +263,7 @@ div.closed-form-container {
 	flex-wrap: wrap;
 	justify-content: space-evenly;
 	align-items: center;
-	padding-top: 1rem;
+	padding-top: 0.5rem;
 }
 div.closed-form {
 	padding: 0px 20px;
@@ -328,4 +328,16 @@ p.footnote {
 }
 svg {
 	margin: 20px 10px 20px 20px;
+}
+
+div.chart-container mjx-container[jax='SVG'][display='true'] {
+	margin: 0px;
+}
+
+div.flex-wrapper {
+	display: flex;
+}
+
+div.flex-child {
+	flex: 1;
 }
