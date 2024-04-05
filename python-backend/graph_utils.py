@@ -99,8 +99,10 @@ async def chart_coordinates(values: dict[int, mpmath.mpf],
                     if not mpmath.almosteq(reduced_q, mpmath.mpf(1)):
                         if n <= DEBUG_LINES:
                             logger.debug(f"reduced q {reduced_q}")
-                            
-                        reduced_delta_y_value = mpmath.fsub(-1, mpmath.log(error, reduced_q))
+
+                        reduced_delta_y_value = mpmath.fsub(-1,
+                                                            mpmath.log(mpmath.fabs(limit - (p_values[n] / q_values[n])),
+                                                                       reduced_q))
 
                         if not mpmath.isinf(reduced_delta_y_value):
                             if n <= DEBUG_LINES:

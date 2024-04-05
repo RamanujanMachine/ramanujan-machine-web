@@ -1,4 +1,3 @@
-import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import PolynomialInput from './PolynomialInput';
 import Charts from './Charts';
@@ -10,9 +9,6 @@ interface PostBody {
 	symbol: string | undefined;
 	i: number;
 }
-
-// setting this value to true will render a_n, b_n, and p_n/q_n for debugging purposes
-const SHOW_DEBUG_CHARTS = false;
 
 function Form() {
 	const [iterationCount, setIterationCount] = useState(1000);
@@ -28,7 +24,6 @@ function Form() {
 	const [errorData, setErrorData] = useState<CoordinatePair[]>([]);
 	const [deltaData, setDeltaData] = useState<CoordinatePair[]>([]);
 	const [reducedDeltaData, setReducedDeltaData] = useState<CoordinatePair[]>([]);
-	const [webSocketReady, setWebSocketReady] = useState(false);
 
 	useEffect(() => {
 		document.getElementsByTagName('input')[0].focus();
@@ -80,7 +75,6 @@ function Form() {
 
 		websocket.onopen = () => {
 			console.log('socket connection opened');
-			setWebSocketReady(true);
 
 			const body: PostBody = {
 				a: polynomialA,
@@ -94,12 +88,10 @@ function Form() {
 
 		websocket.onerror = (e) => {
 			console.log('web socket error', e);
-			setWebSocketReady(false);
 		};
 
 		websocket.onclose = () => {
 			console.log('web socket closed');
-			setWebSocketReady(false);
 		};
 
 		websocket.onmessage = (evt) => {
@@ -204,6 +196,8 @@ function Form() {
 			{noConvergence ? <h3>The provided polynomials do not converge.</h3> : null}
 			{showCharts ? (
 				<Charts
+					a_n={polynomialA}
+					b_n={polynomialB}
 					limit={limit}
 					convergesTo={convergesTo}
 					deltaData={deltaData}
