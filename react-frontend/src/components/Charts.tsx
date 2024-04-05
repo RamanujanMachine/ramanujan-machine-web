@@ -121,13 +121,21 @@ function Charts({
 	return (
 		<div className="chart-container">
 			<MathJaxContext config={config} src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
-				<div>
-					<p>
-						<MathJax inline dynamic>
-							{wrapExpression(a_n, 'a[n]')}
-							{wrapExpression(b_n, 'b[n]')}
-						</MathJax>
-					</p>
+				<div className="flex-wrapper">
+					<div className="flex-child">
+						<p>
+							<MathJax inline dynamic>
+								{wrapExpression(a_n, 'a[n]')}
+							</MathJax>
+						</p>
+					</div>
+					<div className="flex-child">
+						<p>
+							<MathJax inline dynamic>
+								{wrapExpression(b_n, 'b[n]')}
+							</MathJax>
+						</p>
+					</div>
 				</div>
 				{limit ? (
 					<div>
@@ -147,13 +155,43 @@ function Charts({
 				)}
 				{convergesTo ? (
 					<div className="full-width top-padding">
-						<p className="center-content">It seems to converge to:</p>
+						<p className="center-content">It seems to converge to</p>
+						<div className="top-padding center-text">
+							<p className="footnote">
+								<i>
+									Results from{' '}
+									<a
+										href="https://github.com/RamanujanMachine/LIReC"
+										aria-description="Link to LIReC GitHub repository README.">
+										LIReC identify()
+									</a>
+								</i>
+							</p>
+						</div>
 						<div className="closed-form-container">
 							<div className="closed-form">
 								<MathJax inline dynamic>
 									{computeValue()}
 								</MathJax>
 							</div>
+						</div>
+						{wolframResults ? (
+							<div className="top-padding center-text">
+								<p className="footnote">
+									<i>
+										Results from{' '}
+										<a
+											href="https://www.wolframalpha.com/"
+											aria-description="Link to WolframAlpha web interface.">
+											WolframAlpha
+										</a>
+									</i>
+								</p>
+							</div>
+						) : (
+							''
+						)}
+						<div className="closed-form-container">
 							{wolframResults?.map((r: WolframResult) =>
 								wolframValue(r.plaintext) ? (
 									<div className="closed-form" key={r.plaintext}>
