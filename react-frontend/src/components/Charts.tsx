@@ -7,6 +7,8 @@ import constants from '../lib/constants';
 import { CoordinatePair } from '../lib/types';
 
 interface ChartProps {
+	a_n: string;
+	b_n: string;
 	limit?: string;
 	convergesTo?: string;
 	errorData?: CoordinatePair[];
@@ -21,6 +23,8 @@ type WolframResult = {
 };
 
 function Charts({
+	a_n,
+	b_n,
 	limit,
 	convergesTo,
 	errorData,
@@ -40,6 +44,15 @@ function Charts({
 		if (limit) verify();
 	}, [limit]);
 
+	const wrapExpression = (input: string, label?: string) => {
+		try {
+			const mathy = parse(label ? label.concat(' = ', input) : input).toTex();
+			return `$$${mathy}$$`;
+		} catch (e) {
+			console.log(`failed to parse ${input}`);
+		}
+	};
+
 	const computeValue = () => {
 		// we are replacing the exponent operator from python to js syntax
 		// we are also replacing the parentheses with the precision at the end of the expression returned from identify
@@ -51,12 +64,7 @@ function Charts({
 					.replace(/\s\([0-9]+\)$/, '')
 			);
 
-			try {
-				const mathy = parse(input).toTex();
-				return `$$${mathy}$$`;
-			} catch (e) {
-				console.log(`failed to parse ${input}`);
-			}
+			return wrapExpression(input);
 		}
 	};
 
@@ -113,6 +121,14 @@ function Charts({
 	return (
 		<div className="chart-container">
 			<MathJaxContext config={config} src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+				<div>
+					<p>
+						<MathJax inline dynamic>
+							{wrapExpression(a_n, 'a[n]')}
+							{wrapExpression(b_n, 'b[n]')}
+						</MathJax>
+					</p>
+				</div>
 				{limit ? (
 					<div>
 						<p>This is the value of the Polynomial Continued Fraction:</p>
