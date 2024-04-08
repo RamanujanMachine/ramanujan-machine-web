@@ -341,3 +341,7 @@ div.flex-wrapper {
 div.flex-child {
 	flex: 1;
 }
+a.metadata {
+	font-size: 0.8rem;
+	font-weight: normal;
+}

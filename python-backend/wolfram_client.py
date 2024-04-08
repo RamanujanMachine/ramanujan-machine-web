@@ -66,7 +66,7 @@ class WolframClient:
             logger.error("Failed to obtain Wolfram API result", e)
 
     @staticmethod
-    def closed_form(expression: str) -> str:
+    def closed_form(expression: str) -> dict[str, str]:
         """
         Query the Wolfram results API for limits of a string expression
         :param expression: Mathematical expression for which we would like to compute the limit(s)
@@ -74,8 +74,13 @@ class WolframClient:
         """
         try:
             result = WolframClient.ask(query=expression, include_pod="PossibleClosedForm")
+            print(result)
             # only want to return: queryresult -> pods[0] -> subpods
-            return result["queryresult"]["pods"][0]["subpods"]
+            # infos has metadata on the subpods e.g. the constant names and links to reference content
+            # Note: the index of the infos does not line up with the index of the closed form results
+            subpods = result["queryresult"]["pods"][0]["subpods"]
+            meta = result["queryresult"]["pods"][0]["infos"]
+            return {"closed_forms": subpods, "metadata": meta}
         except Exception as e:
             logger.error("Failed to obtain Wolfram API result", e)
 
