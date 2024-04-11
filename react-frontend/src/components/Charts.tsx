@@ -10,7 +10,7 @@ interface ChartProps {
 	a_n: string;
 	b_n: string;
 	limit?: string;
-	convergesTo?: string;
+	convergesTo?: string[];
 	errorData?: CoordinatePair[];
 	deltaData?: CoordinatePair[];
 	reducedDeltaData?: CoordinatePair[];
@@ -20,6 +20,25 @@ interface ChartProps {
 type WolframResult = {
 	plaintext: string;
 	title: string;
+	description: string;
+	link: string;
+};
+
+type MetadataLink = {
+	url: string;
+	text: string;
+	title: string;
+};
+
+type ConstantMetadata = {
+	text: string;
+	links: MetadataLink | MetadataLink[];
+};
+
+type LirecConstantMetadata = {
+	label?: string;
+	expression: string;
+	url?: string;
 };
 
 function Charts({
@@ -33,6 +52,9 @@ function Charts({
 	toggleDisplay
 }: ChartProps) {
 	const [wolframResults, setWolframResults] = useState<WolframResult[]>();
+	const [constantMetadata, setConstantMetadata] = useState<ConstantMetadata[]>([]);
+	const [lirecConstantMetadata, setLirecConstantMetadata] = useState<LirecConstantMetadata[]>([]);
+	const [lirecClosedForm, setLirecClosedForm] = useState<string[]>();
 	const config = {
 		tex: {
 			inlineMath: [['$', '$']],
@@ -44,36 +66,67 @@ function Charts({
 		if (limit) verify();
 	}, [limit]);
 
+	useEffect(() => {
+		if (Array.isArray(convergesTo) && convergesTo.length > 0) {
+			setLirecClosedForm(replaceLirecChars());
+		}
+	}, [convergesTo]);
+
 	const wrapExpression = (input: string, label?: string) => {
+		const expr = label ? label.concat(' = ', input) : input;
 		try {
-			const mathy = parse(label ? label.concat(' = ', input) : input).toTex();
+			const mathy = parse(expr).toTex();
 			return `$$${mathy}$$`;
 		} catch (e) {
 			console.log(`failed to parse ${input}`);
+			return expr;
 		}
 	};
 
-	const computeValue = () => {
+	const replaceLirecChars = () => {
 		// we are replacing the exponent operator from python to js syntax
 		// we are also replacing the parentheses with the precision at the end of the expression returned from identify
-		if (convergesTo) {
-			const input = convertConstants(
-				convergesTo
-					.replaceAll('**', '^')
-					.replace(' = 0', '')
-					.replace(/\s\([0-9]+\)$/, '')
-			);
-
-			return wrapExpression(input);
+		let result = new Array<string>();
+		for (const value of convergesTo!!) {
+			const cleanString = value
+				.replaceAll('**', '^')
+				.replace(' = 0', '')
+				.replace(/\s\([0-9]+\)$/, '');
+			const input = convertLirecConstants(cleanString);
+			result.push(wrapExpression(input));
 		}
+		return result;
 	};
-
-	const convertConstants = (input: string) => {
+	// e.g. '(20*alpha_GW - 34)/(alpha_GW + 9)'
+	// should convert to '(20*α[GW] - 34)/(α[GW] + 9)'
+	const convertLirecConstants = (input: string) => {
+		let constantMeta: LirecConstantMetadata[] = [];
 		let cleanString = input;
+		// all of the LIReC constants use just these characters
+		const notConstChars = '[^a-zA-Z0-9_\\[\\[]';
 		for (const c in constants) {
-			if (constants[c].replacement)
-				cleanString = cleanString.replaceAll(c, constants[c].replacement!!);
+			const t1 = new RegExp(`${notConstChars}+${c}${notConstChars}`);
+			const t2 = new RegExp(`${notConstChars}+${c}$`);
+			// make sure it's not a substring of another constant name
+			if (t1.test(cleanString) || t2.test(cleanString)) {
+				if (constants[c].replacement) {
+					cleanString = cleanString.replaceAll(c, constants[c].replacement!!);
+				}
+				if (constants[c].name || constants[c].url) {
+					let meta: LirecConstantMetadata = {
+						expression: constants[c].replacement ? constants[c].replacement!! : c!!
+					};
+					if (constants[c].name) {
+						meta.label = constants[c].name!!;
+					}
+					if (constants[c].url) {
+						meta.url = constants[c].url!!;
+					}
+					constantMeta.push(meta);
+				}
+			}
 		}
+		setLirecConstantMetadata(constantMeta);
 		return cleanString;
 	};
 
@@ -88,6 +141,9 @@ function Charts({
 		// then go after the entire expression
 		if (cleanInput.indexOf('root of ') > -1) {
 			cleanInput.replace(/root\sof\s(.*)/g, 'sqrt($1)');
+		}
+		if (cleanInput.indexOf('_') > -1) {
+			cleanInput.replace(/_\(\w\)/, '[' + '$1' + ']');
 		}
 		try {
 			const mathy = parse(cleanInput).toTex();
@@ -112,7 +168,21 @@ function Charts({
 					if (response.status != 200) {
 						console.warn(response.data.error);
 					}
-					setWolframResults(response.data.wolfram_says);
+					// keys are "closed_forms" and "metadata" where metadata has entries of the form: ["text": "", "links": {"url":"...", ...}]
+					// "links" can also be an array of objects
+					let wolframData = response.data.wolfram_says.closed_forms;
+					// add link from metadata if present
+					// add description from metadata if present
+					setWolframResults(wolframData);
+					if (typeof response.data.wolfram_says.metadata != 'undefined') {
+						if (Array.isArray(response.data.wolfram_says.metadata)) {
+							if (response.data.wolfram_says.metadata.length > 0) {
+								setConstantMetadata(response.data.wolfram_says.metadata);
+							}
+						} else {
+							setConstantMetadata([response.data.wolfram_says.metadata]);
+						}
+					}
 				})
 				.catch((error) => console.log(error));
 		}
@@ -171,9 +241,38 @@ function Charts({
 						<div className="closed-form-container">
 							<div className="closed-form">
 								<MathJax inline dynamic>
-									{computeValue()}
+									{lirecClosedForm}
 								</MathJax>
 							</div>
+						</div>
+						<div className="meta-container">
+							{constantMetadata?.map((m: ConstantMetadata) => (
+								<a
+									className="metadata"
+									href={Array.isArray(m.links) ? m.links[0].url : m.links?.url}
+									key={m.text}>
+									<MathJax inline dynamic>
+										{wrapExpression(m.text)}
+									</MathJax>
+								</a>
+							))}
+							{lirecConstantMetadata?.map((l: LirecConstantMetadata) =>
+								l.url ? (
+									<a className="metadata" href={l.url} key={l.label}>
+										<MathJax inline dynamic>
+											{wrapExpression(l.expression)}
+										</MathJax>
+										is the {l.label}
+									</a>
+								) : (
+									<p className="footnote metadata" key={l.label}>
+										<MathJax inline dynamic>
+											{wrapExpression(l.expression)}
+										</MathJax>
+										is the {l.label}
+									</p>
+								)
+							)}
 						</div>
 						{wolframResults ? (
 							<div className="top-padding center-text">
@@ -205,6 +304,18 @@ function Charts({
 									''
 								)
 							)}
+						</div>
+						<div className="meta-container">
+							{constantMetadata?.map((m: ConstantMetadata) => (
+								<a
+									className="metadata"
+									href={Array.isArray(m.links) ? m.links[0].url : m.links?.url}
+									key={m.text}>
+									<MathJax inline dynamic>
+										{wrapExpression(m.text)}
+									</MathJax>
+								</a>
+							))}
 						</div>
 					</div>
 				) : (

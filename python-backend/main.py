@@ -107,12 +107,16 @@ async def data_socket(websocket: WebSocket):
             logger.debug(f"last convergent / limit: {limit}")
             await websocket.send_json({"limit": "Infinity" if type(limit) is Infinity else str(limit)})
 
+            # @TODO replace wide_search=True with wide_search=[1]
             computed_values = db.identify(values=[str(limit)], wide_search=True)
+            json_computed_values = []
             for m in computed_values:
                 logger.debug(f"identify returned: {m}")
+                json_computed_values.append(str(m))
 
             await websocket.send_json(
-                {"converges_to": json.dumps(str(computed_values[0] if len(computed_values) > 0 else None))})
+                {"converges_to": json.dumps(json_computed_values)}
+            )
 
             await chart_coordinates(values,
                                     num_values,

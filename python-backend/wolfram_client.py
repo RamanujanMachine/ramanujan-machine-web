@@ -79,7 +79,7 @@ class WolframClient:
             # infos has metadata on the subpods e.g. the constant names and links to reference content
             # Note: the index of the infos does not line up with the index of the closed form results
             subpods = result["queryresult"]["pods"][0]["subpods"]
-            meta = result["queryresult"]["pods"][0]["infos"]
+            meta = result["queryresult"]["pods"][0]["infos"] if "infos" in result["queryresult"]["pods"][0] else []
             return {"closed_forms": subpods, "metadata": meta}
         except Exception as e:
             logger.error("Failed to obtain Wolfram API result", e)

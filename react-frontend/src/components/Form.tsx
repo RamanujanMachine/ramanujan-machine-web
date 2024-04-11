@@ -19,7 +19,7 @@ function Form() {
 	const [showCharts, setShowCharts] = useState(false);
 	const [noConvergence, setNoConvergence] = useState(false);
 	const [waitingForResponse, setWaitingForResponse] = useState(false);
-	const [convergesTo, setConvergesTo] = useState('');
+	const [convergesTo, setConvergesTo] = useState([]);
 	const [limit, setLimit] = useState('');
 	const [errorData, setErrorData] = useState<CoordinatePair[]>([]);
 	const [deltaData, setDeltaData] = useState<CoordinatePair[]>([]);
@@ -30,7 +30,7 @@ function Form() {
 	}, []);
 
 	const resetState = function () {
-		setConvergesTo('');
+		setConvergesTo([]);
 		setLimit('');
 		setErrorData([]);
 		setDeltaData([]);
@@ -82,6 +82,7 @@ function Form() {
 				symbol: polynomialA.match(/([a-zA-Z])/)?.[0] ?? polynomialB.match(/([a-zA-Z])/)?.[0] ?? '',
 				i: iterationCount
 			};
+
 			websocket.send(JSON.stringify(body));
 			setWaitingForResponse(true);
 		};
