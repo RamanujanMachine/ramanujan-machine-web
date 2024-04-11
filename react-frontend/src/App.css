@@ -334,10 +334,26 @@ div.chart-container mjx-container[jax='SVG'][display='true'] {
 	margin: 0px;
 }
 
+.meta-container mjx-container svg {
+	margin: 0px;
+}
+
+.meta-container {
+	text-align: center;
+}
+
+.meta-container mjx-container[jax='SVG'][display='true'] {
+	display: inline;
+}
+
 div.flex-wrapper {
 	display: flex;
 }
 
 div.flex-child {
 	flex: 1;
+}
+.metadata {
+	font-size: 0.8rem;
+	font-weight: normal;
 }

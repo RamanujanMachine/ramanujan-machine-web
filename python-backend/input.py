@@ -48,13 +48,13 @@ def parse(data: Input) -> tuple[Callable, Number, Callable, Number, Symbol]:
         else sympify(b_formatted, rational=True)
 
     # define functions for input expressions
-    def a(x: Number):
+    def a(x: Number) -> mpf:
         """
         Function representation of a
         """
         return mpf(a_symp.evalf(subs={variable: x}, n=PRECISION, strict=True, verbose=constants.VERBOSE_EVAL))
 
-    def b(x: Number):
+    def b(x: Number) -> mpf:
         """
         Function representation of b
         """
