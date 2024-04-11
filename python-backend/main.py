@@ -108,7 +108,7 @@ async def data_socket(websocket: WebSocket):
             await websocket.send_json({"limit": "Infinity" if type(limit) is Infinity else str(limit)})
 
             # @TODO replace wide_search=True with wide_search=[1]
-            computed_values = db.identify(values=[str(limit)], wide_search=True)
+            computed_values: list[str] = db.identify(values=[str(limit)], wide_search=True)
             json_computed_values = []
             for m in computed_values:
                 logger.debug(f"identify returned: {m}")

@@ -19,7 +19,7 @@ class WolframClient:
     """
 
     @staticmethod
-    def ask(query: str, include_pod: str = None) -> str:
+    def ask(query: str, include_pod: str = None) -> dict:
         """
         Invoke the Wolfram Alpha Results API which will allow us to perform various mathematical calculations to
         cross-check our results. Refer to https://products.wolframalpha.com/api/documentation for usage.
@@ -52,7 +52,7 @@ class WolframClient:
                 logger.error("Failed to parse Wolfram API result", e)
 
     @staticmethod
-    def limit(expression: str) -> str:
+    def limit(expression: str) -> list:
         """
         Query the Wolfram results API for limits of a string expression
         :param expression: Mathematical expression for which we would like to compute the limit(s)
@@ -66,7 +66,7 @@ class WolframClient:
             logger.error("Failed to obtain Wolfram API result", e)
 
     @staticmethod
-    def closed_form(expression: str) -> dict[str, str]:
+    def closed_form(expression: str) -> dict:
         """
         Query the Wolfram results API for limits of a string expression
         :param expression: Mathematical expression for which we would like to compute the limit(s)
@@ -74,18 +74,17 @@ class WolframClient:
         """
         try:
             result = WolframClient.ask(query=expression, include_pod="PossibleClosedForm")
-            print(result)
             # only want to return: queryresult -> pods[0] -> subpods
             # infos has metadata on the subpods e.g. the constant names and links to reference content
             # Note: the index of the infos does not line up with the index of the closed form results
             subpods = result["queryresult"]["pods"][0]["subpods"]
-            meta = result["queryresult"]["pods"][0]["infos"] if "infos" in result["queryresult"]["pods"][0] else []
+            meta = result["queryresult"]["pods"][0].get("infos", [])
             return {"closed_forms": subpods, "metadata": meta}
         except Exception as e:
             logger.error("Failed to obtain Wolfram API result", e)
 
     @staticmethod
-    def raw(expression: str) -> str:
+    def raw(expression: str) -> dict:
         """
         Query the Wolfram results API with a string expression
         :param expression: Mathematical expression for which we would like to get more information
@@ -99,7 +98,7 @@ class WolframClient:
             logger.error("Failed to obtain Wolfram API result", e)
 
     @staticmethod
-    def continued_fraction(expression: str) -> str:
+    def continued_fraction(expression: str) -> list:
         """
         Query the Wolfram results API for the continued fraction form of an expression
         :param expression: Mathematical expression for which we would like to retrieve the continued fraction form

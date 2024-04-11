@@ -102,13 +102,11 @@ function Charts({
 	const convertLirecConstants = (input: string) => {
 		let constantMeta: LirecConstantMetadata[] = [];
 		let cleanString = input;
-		// all of the LIReC constants use just these characters
-		const notConstChars = '[^a-zA-Z0-9_\\[\\[]';
 		for (const c in constants) {
-			const t1 = new RegExp(`${notConstChars}+${c}${notConstChars}`);
-			const t2 = new RegExp(`${notConstChars}+${c}$`);
-			// make sure it's not a substring of another constant name
-			if (t1.test(cleanString) || t2.test(cleanString)) {
+			// make sure it's not a substring of another constant name by checking that the constant name
+			// we are processing is either surrounded by non-constant characters or at the beginning/end of the string
+			const tightPattern = new RegExp(`(^|\\W+|\\[[^\\]]*\\])${c}(\\W+|\\[[^\\]]*\\]|$)`);
+			if (tightPattern.test(cleanString)) {
 				if (constants[c].replacement) {
 					cleanString = cleanString.replaceAll(c, constants[c].replacement!!);
 				}
