@@ -123,6 +123,14 @@ div.form-field input {
 	outline-color: var(--muted);
 	flex-grow: 1;
 }
+div.form-field input[name='precision'] {
+	padding: 0.5rem;
+	min-width: 100px;
+	font-size: 1rem;
+	color: var(--input-text);
+	outline-color: var(--muted);
+	flex-grow: 1;
+}
 div.form-field input:focus {
 	border-color: var(--muted);
 	outline-color: var(--muted);
@@ -208,6 +216,10 @@ div.limit-container {
 	margin-right: auto;
 	padding: 1rem;
 	font-size: 1.5rem;
+
+	& p {
+		overflow-wrap: anywhere;
+	}
 }
 .error-message {
 	color: var(--accent);
@@ -352,6 +364,7 @@ div.flex-wrapper {
 
 div.flex-child {
 	flex: 1;
+	align-self: baseline;
 }
 .metadata {
 	font-size: 0.8rem;

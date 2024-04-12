@@ -8,10 +8,14 @@ interface PostBody {
 	b: string;
 	symbol: string | undefined;
 	i: number;
+	precision?: number;
 }
+
+const DEFAULT_PRECISION = 30;
 
 function Form() {
 	const [iterationCount, setIterationCount] = useState(1000);
+	const [precision, setPrecision] = useState(DEFAULT_PRECISION);
 	const [numeratorIsValid, setNumeratorValidity] = useState(false);
 	const [denominatorIsValid, setDenominatorValidity] = useState(false);
 	const [polynomialA, setPolynomialA] = useState('');
@@ -66,6 +70,12 @@ function Form() {
 		} else setIterationCount(iterations);
 	};
 
+	const validatePrecision = function (precision: number) {
+		if (precision > 100 || precision < 0) {
+			setPrecision(DEFAULT_PRECISION);
+		} else setPrecision(precision);
+	};
+
 	const submit = (e: any) => {
 		e.preventDefault();
 		setWaitingForResponse(true);
@@ -80,7 +90,8 @@ function Form() {
 				a: polynomialA,
 				b: polynomialB,
 				symbol: polynomialA.match(/([a-zA-Z])/)?.[0] ?? polynomialB.match(/([a-zA-Z])/)?.[0] ?? '',
-				i: iterationCount
+				i: iterationCount,
+				precision: precision
 			};
 
 			websocket.send(JSON.stringify(body));
@@ -188,6 +199,23 @@ function Form() {
 							/>
 						</div>
 					</div>
+					<div className="form-field">
+						<div>
+							<label>&nbsp;precision&nbsp;</label>
+						</div>
+						<div>
+							<input
+								type="number"
+								min="1"
+								max="100"
+								name="precision"
+								value={precision}
+								onChange={(event) => {
+									validatePrecision(Number(event.target.value));
+								}}
+							/>
+						</div>
+					</div>
 					<button>
 						<div className={spinnerClassFn()}></div>
 						<div className="button-text">Analyze</div>
@@ -203,7 +231,6 @@ function Form() {
 					convergesTo={convergesTo}
 					deltaData={deltaData}
 					errorData={errorData}
-					reducedDeltaData={reducedDeltaData}
 					toggleDisplay={() => {
 						setNoConvergence(false);
 						setShowCharts(!showCharts);

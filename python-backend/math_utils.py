@@ -8,8 +8,6 @@ from sympy.core.numbers import Number
 
 import constants
 
-PRECISION = constants.PRECISION
-
 logger = logging.getLogger('rm_web_app')
 
 
