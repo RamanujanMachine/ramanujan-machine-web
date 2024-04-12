@@ -10,7 +10,7 @@ from sympy.core.numbers import Number
 from sympy.core.symbol import Symbol
 
 import constants
-from constants import PRECISION
+from constants import DEFAULT_PRECISION
 
 logger = logging.getLogger('rm_web_app')
 
@@ -20,6 +20,7 @@ class Input(BaseModel):
     a: str
     b: str
     i: int
+    precision: int = DEFAULT_PRECISION
     symbol: str
     debug: bool = False
 
@@ -29,7 +30,7 @@ class Expression(BaseModel):
     expression: str
 
 
-def parse(data: Input) -> tuple[Callable, Number, Callable, Number, Symbol]:
+def parse(data: Input) -> tuple[Callable, Number, Callable, Number, Symbol, Number]:
     """
     Process user inputs into math expressions
     :param data: User form inputs
@@ -47,22 +48,24 @@ def parse(data: Input) -> tuple[Callable, Number, Callable, Number, Symbol]:
     b_symp = sympify(b_formatted, {data.symbol: variable}, rational=True) if (len(data.symbol) == 1) \
         else sympify(b_formatted, rational=True)
 
+    working_precision = data.precision if 100 >= data.precision > 0 else DEFAULT_PRECISION
+
     # define functions for input expressions
     def a(x: Number) -> mpf:
         """
         Function representation of a
         """
-        return mpf(a_symp.evalf(subs={variable: x}, n=PRECISION, strict=True, verbose=constants.VERBOSE_EVAL))
+        return mpf(a_symp.evalf(subs={variable: x}, n=working_precision, strict=True, verbose=constants.VERBOSE_EVAL))
 
     def b(x: Number) -> mpf:
         """
         Function representation of b
         """
-        return mpf(b_symp.evalf(subs={variable: x}, n=PRECISION, strict=True, verbose=constants.VERBOSE_EVAL))
+        return mpf(b_symp.evalf(subs={variable: x}, n=working_precision, strict=True, verbose=constants.VERBOSE_EVAL))
 
     logger.debug(
         f"PARSED INPUTS symbol is [{variable}], a is [{a_symp}], b is [{b_symp}]")
-    return a, a_symp, b, b_symp, variable
+    return a, a_symp, b, b_symp, variable, working_precision
 
 
 def reformat(polynomial: str) -> str:

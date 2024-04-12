@@ -41,16 +41,7 @@ type LirecConstantMetadata = {
 	url?: string;
 };
 
-function Charts({
-	a_n,
-	b_n,
-	limit,
-	convergesTo,
-	errorData,
-	deltaData,
-	reducedDeltaData,
-	toggleDisplay
-}: ChartProps) {
+function Charts({ a_n, b_n, limit, convergesTo, errorData, deltaData, toggleDisplay }: ChartProps) {
 	const [wolframResults, setWolframResults] = useState<WolframResult[]>();
 	const [constantMetadata, setConstantMetadata] = useState<ConstantMetadata[]>([]);
 	const [lirecConstantMetadata, setLirecConstantMetadata] = useState<LirecConstantMetadata[]>([]);
@@ -151,13 +142,6 @@ function Charts({
 		}
 	};
 
-	const trimLimit = () => {
-		if (limit) {
-			const decimalPosition = limit.indexOf('.');
-			return limit.substring(0, 30 + decimalPosition + 1);
-		}
-	};
-
 	const verify = () => {
 		if (limit) {
 			axios
@@ -209,7 +193,7 @@ function Charts({
 					<div>
 						<p>This is the value of the Polynomial Continued Fraction:</p>
 						<div className="limit-container">
-							<p className="center-text">{trimLimit()}</p>
+							<p className="center-text">{limit}</p>
 						</div>
 						<p className="footnote">
 							<i>
@@ -260,14 +244,14 @@ function Charts({
 										<MathJax inline dynamic>
 											{wrapExpression(l.expression)}
 										</MathJax>
-										is the {l.label}
+										&nbsp;is the {l.label}
 									</a>
 								) : (
 									<p className="footnote metadata" key={l.label}>
 										<MathJax inline dynamic>
 											{wrapExpression(l.expression)}
 										</MathJax>
-										is the {l.label}
+										&nbsp;is the {l.label}
 									</p>
 								)
 							)}
@@ -335,7 +319,6 @@ function Charts({
 						estimations for Delta:
 					</p>
 					<ScatterPlot id="delta_chart" data={deltaData} />
-					<ScatterPlot id="reduced_delta_chart" data={reducedDeltaData} />
 				</div>
 			</MathJaxContext>
 			<button
