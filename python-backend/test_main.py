@@ -89,7 +89,7 @@ def test_generalized_compute_values() -> None:
               mpmath.mpf(1415240640000) / mpmath.mpf(283533296824),
               mpmath.mpf(8010210009600000) / mpmath.mpf(1604788039632960)]
     data = Input(a="(1 + 2 n) (5 + 17 n (1 + n))", b="-n^6", symbol="n", i=100)
-    (a, _, b, _, symbol) = parse(data)
+    (a, _, b, _, symbol, _) = parse(data)
     (convergents, numerators, denominators) = generalized_computed_values(a=a, b=b, iterations=10)
     assert (denominators[1] == mpmath.mpf(117))
     assert (denominators[2] == mpmath.mpf(62531))
@@ -110,7 +110,7 @@ def test_generalized_compute_values_with_simple_input() -> None:
               mpmath.fdiv(972, 1393),
               mpmath.fdiv(6961, 9976), mpmath.fdiv(56660, 81201)]
     data = Input(a="n", b="1", symbol="n", i=100)
-    (a, _, b, _, symbol) = parse(data)
+    (a, _, b, _, symbol, _) = parse(data)
     (convergents, numerators, denominators) = generalized_computed_values(a=a, b=b, iterations=10)
     assert (numerators[2] == mpmath.mpf(2))
     assert (numerators[3] == mpmath.mpf(7))
@@ -140,8 +140,8 @@ def test_simple_compute_values() -> None:
     values = [1, mpmath.fdiv(2, 3), mpmath.fdiv(7, 10), mpmath.fdiv(30, 43), mpmath.fdiv(157, 225),
               mpmath.fdiv(972, 1393),
               mpmath.fdiv(6961, 9976), mpmath.fdiv(56660, 81201)]
-    data = Input(a="n", b="1", symbol="n", i=100)
-    (a, _, b, _, symbol) = parse(data)
+    data = Input(a="n", b="1", symbol="n", i=100, precision=30)
+    (a, _, b, _, symbol, _) = parse(data)
     (convergents, numerators, denominators) = simple_computed_values(a=a, iterations=10)
     assert (numerators[2] == mpmath.mpf(2))
     assert (numerators[3] == mpmath.mpf(7))
