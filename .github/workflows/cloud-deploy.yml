@@ -79,4 +79,4 @@ jobs:
 
     - name: Run Docker container on EC2 instance
       run: |
-        ssh ec2 "docker run -p 80:5173 -p 127.0.0.1:8000:8000 -d ramanujan-machine-web-portal:latest"
+        ssh ec2 "docker run -p 127.0.0.1:8000:8000 -p 80:8000 -d ramanujan-machine-web-portal:latest"

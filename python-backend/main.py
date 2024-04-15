@@ -1,12 +1,14 @@
 """Entrypoint for the application and REST API handlers"""
 import json
 import sys
+from pathlib import Path
 
 import mpmath
 from LIReC.db.access import db
 from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect, WebSocketException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse, RedirectResponse
+from fastapi.staticfiles import StaticFiles
 from sympy.core.numbers import Infinity
 
 import constants
@@ -39,9 +41,24 @@ app.add_middleware(CORSMiddleware,
                    allow_methods=["GET", "POST", "OPTIONS"],
                    allow_headers=["*"])
 
+app.mount("/form", StaticFiles(directory="build"), name="react")
+
+
+@app.get("/")
+def default() -> RedirectResponse:
+    return RedirectResponse(url='/form')
+
+
+@app.get("/form")
+def serve_frontend() -> FileResponse:
+    project_path = Path(__file__).parent.resolve()
+    response = FileResponse(str(project_path / "build/index.html"), media_type="text/html")
+    response.headers["X-Frame-Options"] = "ALLOW-FROM https://www.ramanujanmachine.com"
+    return response
+
 
 @app.post("/verify")
-async def analyze(request: Request):
+async def analyze(request: Request) -> JSONResponse:
     """
     Take sanitized user expression and see what Wolfram Alpha has to say about it, returning the results to the frontend
     :param request: HTTP request

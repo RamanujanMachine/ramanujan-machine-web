@@ -6,16 +6,17 @@ import dns from 'dns';
 dns.setDefaultResultOrder('ipv4first');
 
 export default defineConfig(() => {
-    return {
-        build: {
-            outDir: 'build'
-        },
-        server: {
-            proxy: {
-                '/analyze': 'http://localhost:8000',
-                '/verify': 'http://localhost:8000'
-            }
-        },
-        plugins: [react(), eslint()]
-    };
+	return {
+		build: {
+			outDir: 'build'
+		},
+		base: '/form/',
+		server: {
+			proxy: {
+				'/analyze': 'http://localhost:8000',
+				'/verify': 'http://localhost:8000'
+			}
+		},
+		plugins: [react(), eslint()]
+	};
 });

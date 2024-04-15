@@ -38,7 +38,7 @@ RUN ./venv/bin/activate
 RUN pip3 install -r requirements.txt
 RUN pip3 install uvicorn
 
-EXPOSE 5173
+EXPOSE 80
 EXPOSE 8000
 
 COPY docker_start.sh docker_start.sh
