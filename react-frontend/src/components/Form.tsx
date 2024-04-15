@@ -81,7 +81,7 @@ function Form() {
 		setWaitingForResponse(true);
 		setNoConvergence(false);
 
-		let websocket = new WebSocket('ws://127.0.0.1:8000/data');
+		let websocket = new WebSocket('ws://localhost:8000/data');
 
 		websocket.onopen = () => {
 			console.log('socket connection opened');
@@ -159,7 +159,7 @@ function Form() {
 						polynomials below. They will define a continued fraction of the form:
 					</p>
 					<div className="image-parent">
-						<img src="/form/pcf.png" alt="polynomial continued fraction template pretty printed" />
+						<img src="pcf.png" alt="polynomial continued fraction template pretty printed" />
 					</div>
 					<p>
 						Which will then be calculated up to depth <i>n</i>.
