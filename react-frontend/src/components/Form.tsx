@@ -81,7 +81,7 @@ function Form() {
 		setWaitingForResponse(true);
 		setNoConvergence(false);
 
-		let websocket = new WebSocket('ws://localhost:8000/data');
+		let websocket = new WebSocket('ws://127.0.0.1:8000/data');
 
 		websocket.onopen = () => {
 			console.log('socket connection opened');
