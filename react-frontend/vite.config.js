@@ -14,7 +14,8 @@ export default defineConfig(() => {
 		server: {
 			proxy: {
 				'/analyze': 'http://localhost:8000',
-				'/verify': 'http://localhost:8000'
+				'/verify': 'http://localhost:8000',
+				'/data': 'http://localhost:8000'
 			}
 		},
 		plugins: [react(), eslint()]
