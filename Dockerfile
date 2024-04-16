@@ -41,6 +41,4 @@ RUN pip3 install uvicorn
 EXPOSE 80
 EXPOSE 8000
 
-COPY docker_start.sh docker_start.sh
-RUN chmod +x docker_start.sh
-CMD ./docker_start.sh
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
