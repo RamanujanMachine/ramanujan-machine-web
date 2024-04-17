@@ -3,6 +3,9 @@ import PolynomialInput from './PolynomialInput';
 import Charts from './Charts';
 import { CoordinatePair } from '../lib/types';
 
+const IP = import.meta.env.VITE_PUBLIC_IP ?? 'localhost';
+console.log('ip', IP);
+
 interface PostBody {
 	a: string;
 	b: string;
@@ -27,7 +30,7 @@ function Form() {
 	const [limit, setLimit] = useState('');
 	const [errorData, setErrorData] = useState<CoordinatePair[]>([]);
 	const [deltaData, setDeltaData] = useState<CoordinatePair[]>([]);
-	const [reducedDeltaData, setReducedDeltaData] = useState<CoordinatePair[]>([]);
+	const [, setReducedDeltaData] = useState<CoordinatePair[]>([]);
 
 	useEffect(() => {
 		document.getElementsByTagName('input')[0].focus();
@@ -81,7 +84,7 @@ function Form() {
 		setWaitingForResponse(true);
 		setNoConvergence(false);
 
-		let websocket = new WebSocket('ws://localhost/data');
+		let websocket = new WebSocket(`ws://${IP}/data`);
 
 		websocket.onopen = () => {
 			console.log('socket connection opened');

@@ -23,7 +23,8 @@ jobs:
     - name: Build Docker image
       env:
         WOLFRAM_APP_ID: ${{ secrets.WOLFRAM_APP_ID }}
-      run: docker build --build-arg wolfram_app_id=$WOLFRAM_APP_ID -t ramanujan-machine-web-portal:latest .
+        PUBLIC_IP: ${{ secrets.EC2_HOST }}
+      run: docker build --build-arg wolfram_app_id=$WOLFRAM_APP_ID public_ip=$PUBLIC_IP -t ramanujan-machine-web-portal:latest .
 
     - name: Save Docker image as tarball
       run: |
@@ -79,4 +80,4 @@ jobs:
 
     - name: Run Docker container on EC2 instance
       run: |
-        ssh ec2 "docker run -p 127.0.0.1:8000:8000 -p 80:8000 -d ramanujan-machine-web-portal:latest"
+        ssh ec2 "docker run -p 80:80 -d ramanujan-machine-web-portal:latest"

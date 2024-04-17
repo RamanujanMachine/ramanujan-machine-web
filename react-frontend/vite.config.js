@@ -13,9 +13,9 @@ export default defineConfig(() => {
 		base: '/form/',
 		server: {
 			proxy: {
-				'/analyze': 'http://localhost:8000',
-				'/verify': 'http://localhost:8000',
-				'/data': 'http://localhost:8000'
+				'/analyze': 'http://localhost:80',
+				'/verify': 'http://localhost:80',
+				'/data': 'http://localhost:80'
 			}
 		},
 		plugins: [react(), eslint()]

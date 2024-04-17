@@ -27,19 +27,20 @@ logger = logger.config(True)
 mpmath.mp.dps = constants.DEFAULT_PRECISION
 
 # allow origin to be all possible combinations for protocol, host and port
-origins = [[f"{host}",
-            f"{host}:{port}",
-            f"http://{host}",
-            f"http://{host}:{port}"]
-           for host in constants.HOSTS for port in constants.PORTS]
-origins = [item for sublist in origins for item in sublist]
+# origins = [[f"{host}",
+#             f"{host}:{port}",
+#             f"http://{host}",
+#             f"http://{host}:{port}"]
+#            for host in constants.HOSTS for port in constants.PORTS]
+# origins = [item for sublist in origins for item in sublist]
 
 # Only allow traffic from localhost and restrict methods to those we intend to use
-app.add_middleware(CORSMiddleware,
-                   allow_credentials=False,  # must be true for cookies
-                   allow_origins=origins,
-                   allow_methods=["GET", "POST", "OPTIONS"],
-                   allow_headers=["*"])
+# app.add_middleware(CORSMiddleware,
+#                    allow_credentials=False,  # must be true for cookies
+#                    #allow_origins=origins,
+#                    allow_origins=["*"],
+#                    allow_methods=["GET", "POST", "OPTIONS"],
+#                    allow_headers=["*"])
 
 app.mount("/form", StaticFiles(directory="build"), name="react")
 

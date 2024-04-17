@@ -7,6 +7,8 @@ LABEL description="Ramanujan Machine Web Portal"
 WORKDIR /srv/ramanujan-machine-web-portal
 ARG wolfram_app_id
 ENV WOLFRAM_APP_ID=$wolfram_app_id
+ARG public_ip
+ENV VITE_PUBLIC_IP=$public_ip
 
 # install node
 RUN apt-get update && apt-get -y install git python3 python3-pip python3.10-venv ca-certificates curl gnupg libpq-dev libgmp-dev libmpfr-dev libmpc-dev
@@ -39,6 +41,5 @@ RUN pip3 install -r requirements.txt
 RUN pip3 install uvicorn
 
 EXPOSE 80
-EXPOSE 8000
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
