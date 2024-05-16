@@ -13,9 +13,9 @@ logger = logger.config(True)
 
 class LIReCServicer(lirec_pb2_grpc.LIReCServicer):
     def Identify(self, request: lirec_pb2.IdentifyRequest, context: object) -> lirec_pb2.IdentifyResponse:
-        logger.warning(f"Received request: <{type(request)}> {request}")
+        logger.debug(f"Received request: <{type(request)}> {request}")
         closed_forms = db.identify(values=[request.limit], wide_search=[1], min_prec=constants.DEFAULT_PRECISION)
-        logger.warning(f"Received response: <{type(closed_forms)}> {[str(item) for item in closed_forms]}")
+        logger.debug(f"Received response: <{type(closed_forms)}> {[str(item) for item in closed_forms]}")
         return lirec_pb2.IdentifyResponse(closed_forms=[str(item) for item in closed_forms])
 
 

@@ -12,4 +12,4 @@ You should then be able to run the gRPC server (after activating your virtual en
 
 `python server.py &`
 
-You can then interact with the gRPC server however you choose. grpcurl is a great command line tool or you can use a tool with a user interface such as Postman.
+You can then interact with the gRPC server directly using your gRPC client of choice. If you do not have a tool in mind, [grpcurl](https://github.com/fullstorydev/grpcurl) is a simple command line tool, or you can use a tool with a user interface such as [Postman](https://learning.postman.com/docs/sending-requests/grpc/grpc-request-interface/).
