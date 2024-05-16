@@ -10,3 +10,4 @@ DEBUG_LINES = 10
 VERBOSE_EVAL = False
 # chunk size to send to front end via web socket when computing coordinate pairs
 BATCH_SIZE = 500
+EXTERNAL_PROCESS_TIMEOUT = 10

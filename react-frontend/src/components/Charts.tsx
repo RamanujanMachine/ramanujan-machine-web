@@ -10,10 +10,9 @@ interface ChartProps {
 	a_n: string;
 	b_n: string;
 	limit?: string;
+	symbol: string;
 	convergesTo?: string[];
-	errorData?: CoordinatePair[];
 	deltaData?: CoordinatePair[];
-	reducedDeltaData?: CoordinatePair[];
 	toggleDisplay: () => void;
 }
 
@@ -24,28 +23,30 @@ type WolframResult = {
 	link: string;
 };
 
-type MetadataLink = {
+type WolframLink = {
 	url: string;
+};
+
+type WolframMetadata = {
 	text: string;
-	title: string;
+	links: WolframLink | WolframLink[];
 };
 
 type ConstantMetadata = {
-	text: string;
-	links: MetadataLink | MetadataLink[];
-};
-
-type LirecConstantMetadata = {
-	label?: string;
-	expression: string;
+	name: string;
 	url?: string;
 };
 
-function Charts({ a_n, b_n, limit, convergesTo, errorData, deltaData, toggleDisplay }: ChartProps) {
+type ConstantMetadataWrapper = {
+	[key: string]: ConstantMetadata;
+};
+
+function Charts({ a_n, b_n, limit, symbol, convergesTo, deltaData, toggleDisplay }: ChartProps) {
 	const [wolframResults, setWolframResults] = useState<WolframResult[]>();
-	const [constantMetadata, setConstantMetadata] = useState<ConstantMetadata[]>([]);
-	const [lirecConstantMetadata, setLirecConstantMetadata] = useState<LirecConstantMetadata[]>([]);
+	const [constantMetadata, setConstantMetadata] = useState<Record<string, ConstantMetadata>>({});
 	const [lirecClosedForm, setLirecClosedForm] = useState<string[]>();
+	const [pcf, setPcf] = useState('');
+
 	const config = {
 		tex: {
 			inlineMath: [['$', '$']],
@@ -65,18 +66,42 @@ function Charts({ a_n, b_n, limit, convergesTo, errorData, deltaData, toggleDisp
 
 	const wrapExpression = (input: string, label?: string) => {
 		const expr = label ? label.concat(' = ', input) : input;
+		let parsed, mathy;
 		try {
-			const mathy = parse(expr).toTex();
+			parsed = parse(expr);
+			mathy = parsed.toTex({ parenthesis: 'auto' });
 			return `$$${mathy}$$`;
 		} catch (e) {
-			console.log(`failed to parse ${input}`);
-			return expr;
+			console.error(`failed to parse ${input}`);
+			return `$$${input}$$`;
 		}
 	};
 
+	useEffect(() => {
+		let [a0, a1, a2, a3] = [a_n, a_n, a_n, a_n];
+		let [b1, b2, b3] = [b_n, b_n, b_n];
+		if (symbol) {
+			if (a_n.indexOf(symbol) >= 0) {
+				a0 = parse(a_n.replace(symbol, '0')).evaluate();
+				a1 = parse(a_n.replace(symbol, '1')).evaluate();
+				a2 = parse(a_n.replace(symbol, '2')).evaluate();
+				a3 = parse(a_n.replace(symbol, '3')).evaluate();
+			}
+			if (b_n.indexOf(symbol) >= 0) {
+				b1 = parse(b_n.replace(symbol, '1')).evaluate();
+				b2 = parse(b_n.replace(symbol, '2')).evaluate();
+				b3 = parse(b_n.replace(symbol, '3')).evaluate();
+			}
+		}
+		let parsed = parse(`${a0} + (${b1} / (${a1} + (${b2} / (${a2} + (${b3} / (${a3} + dots))))))`);
+		let mathy = parsed.toTex({ parenthesis: 'auto' });
+		// this is a hack because mathjs chokes on the dots so we put them in after the expression is Texed
+		setPcf(`$$${mathy.replaceAll('dots', '...')}$$`);
+	}, [a_n, b_n, symbol]);
+
 	const replaceLirecChars = () => {
 		// we are replacing the exponent operator from python to js syntax
-		// we are also replacing the parentheses with the precision at the end of the expression returned from identify
+		// we are also stripping the parentheses at the end of the expression returned from identify
 		let result = new Array<string>();
 		for (const value of convergesTo!!) {
 			const cleanString = value
@@ -91,7 +116,6 @@ function Charts({ a_n, b_n, limit, convergesTo, errorData, deltaData, toggleDisp
 	// e.g. '(20*alpha_GW - 34)/(alpha_GW + 9)'
 	// should convert to '(20*α[GW] - 34)/(α[GW] + 9)'
 	const convertLirecConstants = (input: string) => {
-		let constantMeta: LirecConstantMetadata[] = [];
 		let cleanString = input;
 		for (const c in constants) {
 			// make sure it's not a substring of another constant name by checking that the constant name
@@ -101,21 +125,24 @@ function Charts({ a_n, b_n, limit, convergesTo, errorData, deltaData, toggleDisp
 				if (constants[c].replacement) {
 					cleanString = cleanString.replaceAll(c, constants[c].replacement!!);
 				}
+				let name = `${constants[c].replacement ? constants[c].replacement!! : c!!} is the ${constants[c].name!!}`;
 				if (constants[c].name || constants[c].url) {
-					let meta: LirecConstantMetadata = {
-						expression: constants[c].replacement ? constants[c].replacement!! : c!!
+					let meta: ConstantMetadata = {
+						name: name
 					};
-					if (constants[c].name) {
-						meta.label = constants[c].name!!;
-					}
 					if (constants[c].url) {
 						meta.url = constants[c].url!!;
 					}
-					constantMeta.push(meta);
+					let newObj: ConstantMetadataWrapper = {};
+					newObj[meta.name] = meta;
+					setConstantMetadata((previousMetadata) =>
+						Object.hasOwn(previousMetadata, name)
+							? { ...previousMetadata, ...newObj }
+							: previousMetadata
+					);
 				}
 			}
 		}
-		setLirecConstantMetadata(constantMeta);
 		return cleanString;
 	};
 
@@ -125,21 +152,42 @@ function Charts({ a_n, b_n, limit, convergesTo, errorData, deltaData, toggleDisp
 		let cleanInput = input.indexOf('≈') >= 0 ? input.substring(0, input.indexOf('≈')) : input;
 		// replace root of if it wraps a sub expression in parens first since it's a more specific match
 		if (cleanInput.indexOf('root of (') > -1) {
-			cleanInput.replace(/root\sof\s\(([^)]+)\)(.*)/g, 'sqrt($1)$2');
+			cleanInput = cleanInput.replace(/root\sof\s\(([^)]+)\)(.*)/g, 'sqrt($1)$2');
 		}
 		// then go after the entire expression
 		if (cleanInput.indexOf('root of ') > -1) {
-			cleanInput.replace(/root\sof\s(.*)/g, 'sqrt($1)');
+			cleanInput = cleanInput.replace(/root\sof\s(.*)/g, 'sqrt($1)');
 		}
-		if (cleanInput.indexOf('_') > -1) {
-			cleanInput.replace(/_\(\w\)/, '[' + '$1' + ']');
-		}
+		cleanInput = wolframTextCleanup(cleanInput);
 		try {
 			const mathy = parse(cleanInput).toTex();
 			return `$$${mathy}$$`;
 		} catch (e) {
-			console.log(`failed to parse ${cleanInput}`);
+			console.error(`failed to parse ${cleanInput}`);
 		}
+	};
+
+	const wolframTextCleanup = (input: string) => {
+		let text = input;
+		if (text.indexOf('_') > -1) {
+			text = text.replace(/_([a-zA-Z]+)/, '[' + '$1' + '] ');
+		}
+		if (text.indexOf("'s") > -1) {
+			// traditional apostrophe gets replaced with superscript H
+			text = text.replace("'s", 's');
+		}
+		return text;
+	};
+
+	const polishMetadata = (input: WolframMetadata) => {
+		let name = wolframTextCleanup(input.text);
+		const newMeta = {
+			name: name,
+			url: Array.isArray(input.links) ? input.links[0].url : input.links?.url
+		};
+		let newObj: ConstantMetadataWrapper = {};
+		newObj[input.text] = newMeta;
+		setConstantMetadata((previousMetadata) => ({ ...previousMetadata, ...newObj }));
 	};
 
 	const verify = () => {
@@ -158,11 +206,11 @@ function Charts({ a_n, b_n, limit, convergesTo, errorData, deltaData, toggleDisp
 					setWolframResults(wolframData);
 					if (typeof response.data.wolfram_says.metadata != 'undefined') {
 						if (Array.isArray(response.data.wolfram_says.metadata)) {
-							if (response.data.wolfram_says.metadata.length > 0) {
-								setConstantMetadata(response.data.wolfram_says.metadata);
+							for (let m of response.data.wolfram_says.metadata) {
+								polishMetadata(m);
 							}
 						} else {
-							setConstantMetadata([response.data.wolfram_says.metadata]);
+							polishMetadata(response.data.wolfram_says.metadata);
 						}
 					}
 				})
@@ -172,19 +220,21 @@ function Charts({ a_n, b_n, limit, convergesTo, errorData, deltaData, toggleDisp
 
 	return (
 		<div className="chart-container">
+			<p className="nav-wrapper">
+				<a
+					target="_self"
+					onClick={() => {
+						toggleDisplay();
+					}}>
+					&larr;&nbsp;back to form
+				</a>
+			</p>
 			<MathJaxContext config={config} src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
 				<div className="flex-wrapper">
 					<div className="flex-child">
 						<p>
 							<MathJax inline dynamic>
-								{wrapExpression(a_n, 'a[n]')}
-							</MathJax>
-						</p>
-					</div>
-					<div className="flex-child">
-						<p>
-							<MathJax inline dynamic>
-								{wrapExpression(b_n, 'b[n]')}
+								{pcf}
 							</MathJax>
 						</p>
 					</div>
@@ -215,7 +265,7 @@ function Charts({ a_n, b_n, limit, convergesTo, errorData, deltaData, toggleDisp
 									<a
 										href="https://github.com/RamanujanMachine/LIReC"
 										aria-description="Link to LIReC GitHub repository README.">
-										LIReC identify()
+										LIReC
 									</a>
 								</i>
 							</p>
@@ -226,35 +276,6 @@ function Charts({ a_n, b_n, limit, convergesTo, errorData, deltaData, toggleDisp
 									{lirecClosedForm}
 								</MathJax>
 							</div>
-						</div>
-						<div className="meta-container">
-							{constantMetadata?.map((m: ConstantMetadata) => (
-								<a
-									className="metadata"
-									href={Array.isArray(m.links) ? m.links[0].url : m.links?.url}
-									key={m.text}>
-									<MathJax inline dynamic>
-										{wrapExpression(m.text)}
-									</MathJax>
-								</a>
-							))}
-							{lirecConstantMetadata?.map((l: LirecConstantMetadata) =>
-								l.url ? (
-									<a className="metadata" href={l.url} key={l.label}>
-										<MathJax inline dynamic>
-											{wrapExpression(l.expression)}
-										</MathJax>
-										&nbsp;is the {l.label}
-									</a>
-								) : (
-									<p className="footnote metadata" key={l.label}>
-										<MathJax inline dynamic>
-											{wrapExpression(l.expression)}
-										</MathJax>
-										&nbsp;is the {l.label}
-									</p>
-								)
-							)}
 						</div>
 						{wolframResults ? (
 							<div className="top-padding center-text">
@@ -288,27 +309,29 @@ function Charts({ a_n, b_n, limit, convergesTo, errorData, deltaData, toggleDisp
 							)}
 						</div>
 						<div className="meta-container">
-							{constantMetadata?.map((m: ConstantMetadata) => (
-								<a
-									className="metadata"
-									href={Array.isArray(m.links) ? m.links[0].url : m.links?.url}
-									key={m.text}>
-									<MathJax inline dynamic>
-										{wrapExpression(m.text)}
-									</MathJax>
-								</a>
-							))}
+							<div>
+								{constantMetadata
+									? Object.values(constantMetadata).map((entry: ConstantMetadata) => (
+										<p className="footnote metadata" key={entry.name}>
+											<MathJax inline dynamic>
+												{wrapExpression(entry.name)}
+											</MathJax>
+											{typeof entry.url != 'undefined' ? (
+												<a className="metadata" href={entry.url} target="_blank" rel="noreferrer">
+														&nbsp;&#x1F517;
+												</a>
+											) : (
+												''
+											)}
+										</p>
+									))
+									: ''}
+							</div>
 						</div>
 					</div>
 				) : (
 					''
 				)}
-				<div className="top-padding plot-container">
-					<p>
-						The rate of convergence for this Polynomial Continued Fraction (in digits per step):{' '}
-					</p>
-					<ScatterPlot id="error_chart" data={errorData} />
-				</div>
 				<div className="top-padding plot-container">
 					<p>
 						Delta is a measure of the irrationality of a number (read more about it{' '}
@@ -325,7 +348,7 @@ function Charts({ a_n, b_n, limit, convergesTo, errorData, deltaData, toggleDisp
 				onClick={() => {
 					toggleDisplay();
 				}}>
-				Modify
+				Modify Inputs
 			</button>
 		</div>
 	);

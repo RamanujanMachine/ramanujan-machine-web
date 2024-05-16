@@ -10,12 +10,9 @@ interface PostBody {
 	i: number;
 	precision?: number;
 }
-
-const DEFAULT_PRECISION = 30;
-
+ 
 function Form() {
 	const [iterationCount, setIterationCount] = useState(1000);
-	const [precision, setPrecision] = useState(DEFAULT_PRECISION);
 	const [numeratorIsValid, setNumeratorValidity] = useState(false);
 	const [denominatorIsValid, setDenominatorValidity] = useState(false);
 	const [polynomialA, setPolynomialA] = useState('');
@@ -25,9 +22,7 @@ function Form() {
 	const [waitingForResponse, setWaitingForResponse] = useState(false);
 	const [convergesTo, setConvergesTo] = useState([]);
 	const [limit, setLimit] = useState('');
-	const [errorData, setErrorData] = useState<CoordinatePair[]>([]);
 	const [deltaData, setDeltaData] = useState<CoordinatePair[]>([]);
-	const [reducedDeltaData, setReducedDeltaData] = useState<CoordinatePair[]>([]);
 
 	useEffect(() => {
 		document.getElementsByTagName('input')[0].focus();
@@ -36,9 +31,7 @@ function Form() {
 	const resetState = function () {
 		setConvergesTo([]);
 		setLimit('');
-		setErrorData([]);
 		setDeltaData([]);
-		setReducedDeltaData([]);
 	};
 
 	const onlyOneSymbolUsed = function () {
@@ -70,18 +63,16 @@ function Form() {
 		} else setIterationCount(iterations);
 	};
 
-	const validatePrecision = function (precision: number) {
-		if (precision > 100 || precision < 0) {
-			setPrecision(DEFAULT_PRECISION);
-		} else setPrecision(precision);
-	};
+	const isolateSymbol = () => {
+		return polynomialA.match(/([a-zA-Z])/)?.[0] ?? polynomialB.match(/([a-zA-Z])/)?.[0] ?? '';
+	}
 
 	const submit = (e: any) => {
 		e.preventDefault();
 		setWaitingForResponse(true);
 		setNoConvergence(false);
 
-		let websocket = new WebSocket('ws://127.0.0.1:8000/data');
+		let websocket = new WebSocket('ws://127.0.0.1:80/data');
 
 		websocket.onopen = () => {
 			console.log('socket connection opened');
@@ -89,9 +80,8 @@ function Form() {
 			const body: PostBody = {
 				a: polynomialA,
 				b: polynomialB,
-				symbol: polynomialA.match(/([a-zA-Z])/)?.[0] ?? polynomialB.match(/([a-zA-Z])/)?.[0] ?? '',
-				i: iterationCount,
-				precision: precision
+				symbol: isolateSymbol(),
+				i: iterationCount
 			};
 
 			websocket.send(JSON.stringify(body));
@@ -123,27 +113,17 @@ function Form() {
 				}
 			} else if (Object.hasOwn(message, 'converges_to')) {
 				setConvergesTo(JSON.parse(message.converges_to));
-			} else if (Object.hasOwn(message, 'error')) {
-				const incomingErrorData = JSON.parse(message.error);
-				if (incomingErrorData.length > 0) {
-					setErrorData((previousData) => [...previousData, ...incomingErrorData]);
-				}
 			} else if (Object.hasOwn(message, 'delta')) {
 				const incomingDeltaData = JSON.parse(message.delta);
 				if (incomingDeltaData.length > 0) {
 					setDeltaData((previousData) => [...previousData, ...incomingDeltaData]);
-				}
-			} else if (Object.hasOwn(message, 'reduced_delta')) {
-				const incomingRedDeltaData = JSON.parse(message.reduced_delta);
-				if (incomingRedDeltaData.length > 0) {
-					setReducedDeltaData((previousData) => [...previousData, ...incomingRedDeltaData]);
 				}
 			}
 		};
 	};
 
 	return (
-		<div>
+		<div className="form-parent">
 			<form className={formClassFn()} onSubmit={submit}>
 				<div>
 					<p>
@@ -199,23 +179,6 @@ function Form() {
 							/>
 						</div>
 					</div>
-					<div className="form-field">
-						<div>
-							<label>&nbsp;precision&nbsp;</label>
-						</div>
-						<div>
-							<input
-								type="number"
-								min="1"
-								max="100"
-								name="precision"
-								value={precision}
-								onChange={(event) => {
-									validatePrecision(Number(event.target.value));
-								}}
-							/>
-						</div>
-					</div>
 					<button>
 						<div className={spinnerClassFn()}></div>
 						<div className="button-text">Analyze</div>
@@ -228,9 +191,9 @@ function Form() {
 					a_n={polynomialA}
 					b_n={polynomialB}
 					limit={limit}
+					symbol={isolateSymbol()}
 					convergesTo={convergesTo}
 					deltaData={deltaData}
-					errorData={errorData}
 					toggleDisplay={() => {
 						setNoConvergence(false);
 						setShowCharts(!showCharts);

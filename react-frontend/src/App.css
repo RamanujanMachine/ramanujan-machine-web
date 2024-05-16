@@ -22,6 +22,7 @@ body {
 }
 .app-root {
 	text-align: center;
+	overflow-y: auto;
 	width: 100%;
 	height: 100%;
 }
@@ -30,7 +31,7 @@ div.body {
 	height: auto;
 	background-color: var(--muted);
 	overflow-y: auto;
-	height: 90%;
+	height: 100%;
 }
 /* colors and other universal defaults */
 :root {
@@ -58,12 +59,20 @@ div.body {
 	font-size: 3rem;
 	color: var(--light-text);
 	background-size: cover;
-	position: relative;
+	position: fixed;
+	width: 100%;
+	z-index: 1; /* force the body to scroll under the header */
 }
+
 div.subheading {
 	font-size: 1rem;
 }
 
+div.form-parent {
+	top: 8rem;
+	height: fit-content;
+	position: relative;
+}
 /* form component */
 .form {
 	display: flex;
@@ -352,6 +361,11 @@ div.chart-container mjx-container[jax='SVG'][display='true'] {
 
 .meta-container {
 	text-align: center;
+	 & div {
+		width: fit-content;
+		text-align: left;
+		margin: auto;
+	 }
 }
 
 .meta-container mjx-container[jax='SVG'][display='true'] {
@@ -369,4 +383,15 @@ div.flex-child {
 .metadata {
 	font-size: 0.8rem;
 	font-weight: normal;
+}
+p.nav-wrapper {
+	text-align: left;
+	width: 100%;
+    font-style: italic;
+    font-size: 0.8rem;
+	& a {
+		cursor: pointer;
+	} a:hover {
+		color: var(--accent);
+	}
 }

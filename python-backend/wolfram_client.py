@@ -6,7 +6,6 @@ import logging
 from json import JSONDecodeError
 
 import requests
-
 from custom_exceptions import APIError
 from secrets import Secrets
 
@@ -59,7 +58,8 @@ class WolframClient:
         :return: Wolfram API response "subpods" with the computed limit(s)
         """
         try:
-            result = WolframClient.ask(query="limit of {}".format(expression), include_pod="Limit")
+            # Wolfram has a 200 character input limit
+            result = WolframClient.ask(query="limit of {}".format(expression[:191]), include_pod="Limit")
             # only want to return: queryresult -> pods[0] -> subpods
             return result["queryresult"]["pods"][0]["subpods"]
         except Exception as e:
@@ -73,10 +73,12 @@ class WolframClient:
         :return: Wolfram API response "subpods" with the computed limit(s)
         """
         try:
-            result = WolframClient.ask(query=expression, include_pod="PossibleClosedForm")
+            # Wolfram has a 200 character input limit
+            result = WolframClient.ask(query=expression[:200], include_pod="PossibleClosedForm")
             # only want to return: queryresult -> pods[0] -> subpods
             # infos has metadata on the subpods e.g. the constant names and links to reference content
             # Note: the index of the infos does not line up with the index of the closed form results
+            logger.debug(result)
             subpods = result["queryresult"]["pods"][0]["subpods"]
             meta = result["queryresult"]["pods"][0].get("infos", [])
             return {"closed_forms": subpods, "metadata": meta}
@@ -91,7 +93,8 @@ class WolframClient:
         :return: Wolfram API response
         """
         try:
-            result = WolframClient.ask(query=f"{expression}")
+            # Wolfram has a 200 character input limit
+            result = WolframClient.ask(query=f"{expression[:200]}")
             # just pass the result through
             return result["queryresult"]
         except Exception as e:
@@ -105,7 +108,8 @@ class WolframClient:
         :return: Wolfram API response "subpods" with the continued fraction form of the expression
         """
         try:
-            result = WolframClient.ask(query="continued fraction representation of {}".format(expression))
+            # Wolfram has a 200 character input limit
+            result = WolframClient.ask(query="continued fraction representation of {}".format(expression[:163]))
             # only want to return: queryresult -> pods[0] -> subpods
             return result["queryresult"]["pods"][0]["subpods"]
         except Exception as e:

@@ -1,7 +1,17 @@
 #!/bin/bash
 
+# Start gRPC server
+cd lirec-grpc-server
+. venv/bin/activate
+python server.py &
+deactivate
+cd ..
+
 # Start the web server
-uvicorn main:app --host "0.0.0.0" --port 8000 &
+cd python-backend
+. venv/bin/activate
+uvicorn main:app --host "0.0.0.0" --port 80 &
+deactivate
 
 # Wait for any process to exit
 wait -n
