@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_outer_classname = "LIReCProto";
+option objc_class_prefix = "HLW";
+
+package lirec_rpc;
+
+service LIReC {
+  // Sends a greeting
+  rpc Identify(IdentifyRequest) returns (IdentifyResponse) {}
+}
+
+message IdentifyRequest {
+  string limit = 1;
+}
+
+message IdentifyResponse {
+  repeated string closed_forms = 1;
+}

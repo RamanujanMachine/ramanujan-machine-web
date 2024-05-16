@@ -1,9 +1,7 @@
 name: Build and Deploy to Cloud
 
 on:
-  push:
-#    branches:
-#      - main
+  workflow_dispatch:
 
 jobs:
   build_and_deploy:
@@ -11,7 +9,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Install dependencies
       run: |
@@ -41,10 +39,6 @@ jobs:
       run: |
         echo "$EC2_SSH_KEY" > ~/.ssh/actions.key
         chmod 600 ~/.ssh/actions.key
-
-#    - name: Add Key to Known Hosts
-#      run: |
-#          ssh-keyscan -v "${{ secrets.EC2_HOST }}" >> ~/.ssh/actions.pub
 
     - name: Write SSH Config
       env:

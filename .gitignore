@@ -35,9 +35,8 @@ react-frontend/cypress/videos/
 # BACKEND
 .idea
 .env
-# other repos that aren't packaged
-python-backend/external
-python-backend/venv
-python-backend/__pycache__
-python-backend/lirec.cache
-python-backend/*.log
+__pycache__/
+lirec.cache
+*.pyc
+venv/
+*.log

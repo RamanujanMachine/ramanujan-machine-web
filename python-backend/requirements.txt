@@ -8,4 +8,3 @@ requests==2.31.0
 sympy==1.12
 websockets==12.0
 ramanujan@https://github.com/RamanujanMachine/ResearchTools/archive/refs/heads/master.tar.gz
-LIReC@git+https://github.com/RamanujanMachine/LIReC.git@main
