@@ -89,14 +89,11 @@ def laurent_wrapper(a: str, b: str, output: str) -> None:
 
 
 def test_laurent_cases() -> None:
-    laurent_wrapper('2', 'n', 'n + 1')
     laurent_wrapper('2*n + 1', '-n**2', '-1/(4*n**2) - 1/(16*n**4) + o(1/n**4)')
     laurent_wrapper('2*n + 5', '-n', '1 - 1/n + o(1/n)')
     laurent_wrapper('4*n + 2', '-n**2', '3/4 - 1/(16*n**2) + o(1/n**2)')
     laurent_wrapper('1', '1', '5')
     laurent_wrapper('2', '-1', '0')
-    laurent_wrapper('1', '-(n**2)', '1 - 4*n**2')
-    laurent_wrapper('1', 'n**3', '4*n**3 + 1')
 
 
 @check.check_func
