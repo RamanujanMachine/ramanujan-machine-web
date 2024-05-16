@@ -2,18 +2,17 @@
 
 describe('landing form', () => {
 	beforeEach(() => {
-		cy.visit('http://localhost:5173');
+		cy.visit('http://localhost:5173/form/');
 		cy.viewport('macbook-11');
 	});
 
 	const invalidMathInput = `4..`;
 
 	it('displays two input fields for polynomials and one for iterations', () => {
-		cy.get('input').should('have.length', 4);
+		cy.get('input').should('have.length', 3);
 		cy.get('input').first().should('have.text', '');
 		cy.get('input').eq(1).should('have.text', '');
 		cy.get('input').eq(2).should('have.value', '1000');
-		cy.get('input').eq(3).should('have.value', '30');
 	});
 
 	it('should be focused on first input element', () => {
