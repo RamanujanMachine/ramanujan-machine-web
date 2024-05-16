@@ -32,6 +32,7 @@ async def chart_coordinates(pcf: pcf_module.PCF, limit: mpmath.mpf,
     :return: tuple of arrays of [x,y] pairs for graphing purposes
     """
     y_values = pcf.delta_sequence(limit=limit, depth=iterations)
-    delta_x_y_pairs = [Point2D(x=n, y=y_values[n - 1]) for n in range(1, iterations)]
+    logger.debug(f'y_values: {y_values}')
+    delta_x_y_pairs = [Point2D(x=n, y=str(y_values[n - 1])) for n in range(1, iterations)]
 
     await websocket.send_json({"delta": json.dumps(delta_x_y_pairs)})

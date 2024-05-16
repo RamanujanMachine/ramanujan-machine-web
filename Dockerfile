@@ -19,13 +19,6 @@ RUN apt-get -y install libpq-dev libgmp-dev libgmp3-dev libmpfr-dev libmpc-dev
 RUN apt-get install -y npm
 RUN npm i -g n && n lts && npm i -g npm@latest
 
-# install NodeJS
-#RUN mkdir -p /etc/apt/keyrings
-#RUN curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
-#ENV NODE_MAJOR=22
-#RUN echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_MAJOR.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list
-#RUN apt-get update && apt-get -y install nodejs
-
 # React frontend
 COPY react-frontend ./react-frontend
 WORKDIR /srv/ramanujan-machine-web-portal/react-frontend
@@ -42,7 +35,6 @@ RUN cp -rf react-frontend/build python-backend/build
 WORKDIR /srv/ramanujan-machine-web-portal/python-backend
 RUN rm -rf venv
 RUN python3 -m venv venv
-#RUN chmod +x venv/bin/activate
 RUN . venv/bin/activate
 RUN ./venv/bin/python -m pip install uvicorn
 RUN ./venv/bin/python -m pip install -r /srv/ramanujan-machine-web-portal/python-backend/requirements.txt
@@ -56,7 +48,6 @@ COPY lirec-grpc-server ./lirec-grpc-server
 WORKDIR /srv/ramanujan-machine-web-portal/lirec-grpc-server
 RUN rm -rf venv
 RUN python3 -m venv venv
-#RUN chmod +x venv/bin/activate
 RUN . venv/bin/activate
 RUN venv/bin/python -m pip install -r requirements.txt
 ENV PATH=$BKPATH
@@ -72,7 +63,6 @@ RUN python3 -m grpc_tools.protoc --proto_path=/srv/ramanujan-machine-web-portal/
 
 # expose web port
 EXPOSE 80
-EXPOSE 8000
 
 # start web and gRPC servers
 WORKDIR /srv/ramanujan-machine-web-portal

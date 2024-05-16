@@ -50,20 +50,6 @@ class WolframClient:
             except JSONDecodeError as e:
                 logger.error("Failed to parse Wolfram API result", e)
 
-    @staticmethod
-    def limit(expression: str) -> list:
-        """
-        Query the Wolfram results API for limits of a string expression
-        :param expression: Mathematical expression for which we would like to compute the limit(s)
-        :return: Wolfram API response "subpods" with the computed limit(s)
-        """
-        try:
-            # Wolfram has a 200 character input limit
-            result = WolframClient.ask(query="limit of {}".format(expression[:191]), include_pod="Limit")
-            # only want to return: queryresult -> pods[0] -> subpods
-            return result["queryresult"]["pods"][0]["subpods"]
-        except Exception as e:
-            logger.error("Failed to obtain Wolfram API result", e)
 
     @staticmethod
     def closed_form(expression: str) -> dict:
@@ -82,35 +68,5 @@ class WolframClient:
             subpods = result["queryresult"]["pods"][0]["subpods"]
             meta = result["queryresult"]["pods"][0].get("infos", [])
             return {"closed_forms": subpods, "metadata": meta}
-        except Exception as e:
-            logger.error("Failed to obtain Wolfram API result", e)
-
-    @staticmethod
-    def raw(expression: str) -> dict:
-        """
-        Query the Wolfram results API with a string expression
-        :param expression: Mathematical expression for which we would like to get more information
-        :return: Wolfram API response
-        """
-        try:
-            # Wolfram has a 200 character input limit
-            result = WolframClient.ask(query=f"{expression[:200]}")
-            # just pass the result through
-            return result["queryresult"]
-        except Exception as e:
-            logger.error("Failed to obtain Wolfram API result", e)
-
-    @staticmethod
-    def continued_fraction(expression: str) -> list:
-        """
-        Query the Wolfram results API for the continued fraction form of an expression
-        :param expression: Mathematical expression for which we would like to retrieve the continued fraction form
-        :return: Wolfram API response "subpods" with the continued fraction form of the expression
-        """
-        try:
-            # Wolfram has a 200 character input limit
-            result = WolframClient.ask(query="continued fraction representation of {}".format(expression[:163]))
-            # only want to return: queryresult -> pods[0] -> subpods
-            return result["queryresult"]["pods"][0]["subpods"]
         except Exception as e:
             logger.error("Failed to obtain Wolfram API result", e)
