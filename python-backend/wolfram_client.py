@@ -61,7 +61,7 @@ class WolframClient:
         """
         try:
             # Wolfram has a 200 character input limit
-            assert len(expression) == 200
+            assert len(expression) <= 200
         except AssertionError:
             logger.warning("Truncating decimal value to 200 characters to keep within Wolfram API query limit")
 
