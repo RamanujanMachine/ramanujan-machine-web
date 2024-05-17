@@ -11,12 +11,6 @@ export default defineConfig(() => {
 			outDir: 'build'
 		},
 		base: '/form/',
-		server: {
-			proxy: {
-				'/analyze': 'http://localhost:80',
-				'/verify': 'http://localhost:80'
-			}
-		},
 		plugins: [react(), eslint()]
 	};
 });

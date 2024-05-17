@@ -167,6 +167,8 @@ function Charts({ a_n, b_n, limit, symbol, convergesTo, deltaData, toggleDisplay
 		}
 	};
 
+	// were having issues with underscores not properly converting the subsequent text to subscript,
+	// this fixes that bug
 	const wolframTextCleanup = (input: string) => {
 		let text = input;
 		if (text.indexOf('_') > -1) {
@@ -179,6 +181,8 @@ function Charts({ a_n, b_n, limit, symbol, convergesTo, deltaData, toggleDisplay
 		return text;
 	};
 
+	// we get constant/symbol metadata from both wolfram and LIReC and we need to consolidate into 
+	// a unified format to prevent duplicates and line up the attribute names
 	const polishMetadata = (input: WolframMetadata) => {
 		let name = wolframTextCleanup(input.text);
 		const newMeta = {
