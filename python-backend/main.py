@@ -3,19 +3,19 @@ import json
 import sys
 from pathlib import Path
 
-import mpmath
-from LIReC.db.access import db
-from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect, WebSocketException
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, FileResponse, RedirectResponse
-from fastapi.staticfiles import StaticFiles
-from sympy.core.numbers import Infinity
-
+import call_wrapper
 import constants
 import logger
+import mpmath
+from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect, WebSocketException
+from fastapi.responses import JSONResponse, FileResponse, RedirectResponse
+from fastapi.staticfiles import StaticFiles
 from graph_utils import (chart_coordinates)
 from input import Input, Expression, parse
-from math_utils import generalized_computed_values, simple_computed_values, laurent, assess_convergence
+from math_utils import laurent, assess_convergence
+from ramanujan import pcf
+from sympy import sympify
+from sympy.core.numbers import Infinity
 from wolfram_client import WolframClient
 
 sys.set_int_max_str_digits(0)
@@ -26,31 +26,22 @@ logger = logger.config(True)
 
 mpmath.mp.dps = constants.DEFAULT_PRECISION
 
-# allow origin to be all possible combinations for protocol, host and port
-origins = [[f"{host}",
-            f"{host}:{port}",
-            f"http://{host}",
-            f"http://{host}:{port}"]
-           for host in constants.HOSTS for port in constants.PORTS]
-origins = [item for sublist in origins for item in sublist]
-
-# Only allow traffic from localhost and restrict methods to those we intend to use
-app.add_middleware(CORSMiddleware,
-                   allow_credentials=False,  # must be true for cookies
-                   allow_origins=origins,
-                   allow_methods=["GET", "POST", "OPTIONS"],
-                   allow_headers=["*"])
-
 app.mount("/form", StaticFiles(directory="build"), name="react")
 
 
 @app.get("/")
 def default() -> RedirectResponse:
+    """
+    Make sure to redirect bare IP/url to form landing page
+    """
     return RedirectResponse(url='/form')
 
 
 @app.get("/form")
 def serve_frontend() -> FileResponse:
+    """
+    Serves static React UI - facilitates embedding as iframe
+    """
     project_path = Path(__file__).parent.resolve()
     response = FileResponse(str(project_path / "build/index.html"), media_type="text/html")
     response.headers["X-Frame-Options"] = "ALLOW-FROM https://www.ramanujanmachine.com"
@@ -109,24 +100,12 @@ async def data_socket(websocket: WebSocket):
                         logger.debug(f"values do not converge. closing socket.")
                         await websocket.close()
 
-                # per the link below, "when bi = 1 (the partial numerator) for all i the expression is called a
-                # simple continued fraction" b here is the partial numerator (a and b are often used interchangeably
-                # which may lead to confusion when there is no associated image of the continued fraction)
-                # https://en.wikipedia.org/wiki/Continued_fraction#Basic_formula
-                if data.b == "1":
-                    (values, num_values, denom_values) = simple_computed_values(a_func, iterations=iterations)
-                else:
-                    # generalized continued fractions, where the partial numerator has its own formula and is not
-                    # equal to 1 https://en.wikipedia.org/wiki/Generalized_continued_fraction
-                    (values, num_values, denom_values) = generalized_computed_values(a_func, b_func,
-                                                                                     iterations=iterations)
-
-                limit = values[next(reversed(values))]
+                limit = call_wrapper.pcf_limit(sympify(data.a), sympify(data.b), iterations)
                 logger.debug(f"last convergent / limit: {limit}")
                 await websocket.send_json({"limit": "Infinity" if type(limit) is Infinity else str(limit)})
 
-                # @TODO replace wide_search=True with wide_search=[1]
-                computed_values: list[str] = db.identify(values=[str(limit)], wide_search=True)
+                logger.debug(f"limit type: {type(limit)}")
+                computed_values: list[str] = call_wrapper.lirec_identify(limit)
                 json_computed_values = []
                 for m in computed_values:
                     logger.debug(f"identify returned: {m}")
@@ -136,10 +115,8 @@ async def data_socket(websocket: WebSocket):
                     {"converges_to": json.dumps(json_computed_values)}
                 )
 
-                await chart_coordinates(values,
-                                        num_values,
-                                        denom_values,
-                                        limit,
+                await chart_coordinates(pcf=pcf.PCF(sympify(data.a), sympify(data.b)),
+                                        limit=mpmath.mpf(limit),
                                         iterations=iterations,
                                         websocket=websocket)
 

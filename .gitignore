@@ -9,7 +9,7 @@ react-frontend/node_modules
 # testing
 react-frontend/coverage
 
-# production
+# production artifacts
 react-frontend/build
 
 # misc
@@ -36,7 +36,12 @@ react-frontend/cypress/videos/
 .idea
 .env
 __pycache__/
+# cache created by LIReC
 lirec.cache
 *.pyc
+# virtual environment
 venv/
+# log files produced by the web or gRPC server
 *.log
+# gRPC codegen artifacts
+*_pb2*.py
