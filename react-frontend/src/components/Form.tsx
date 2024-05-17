@@ -10,7 +10,7 @@ interface PostBody {
 	i: number;
 	precision?: number;
 }
- 
+
 function Form() {
 	const [iterationCount, setIterationCount] = useState(1000);
 	const [numeratorIsValid, setNumeratorValidity] = useState(false);
@@ -65,14 +65,14 @@ function Form() {
 
 	const isolateSymbol = () => {
 		return polynomialA.match(/([a-zA-Z])/)?.[0] ?? polynomialB.match(/([a-zA-Z])/)?.[0] ?? '';
-	}
+	};
 
 	const submit = (e: any) => {
 		e.preventDefault();
 		setWaitingForResponse(true);
 		setNoConvergence(false);
 
-		let websocket = new WebSocket('ws://127.0.0.1:80/data');
+		let websocket = new WebSocket('ws://localhost/data');
 
 		websocket.onopen = () => {
 			console.log('socket connection opened');
