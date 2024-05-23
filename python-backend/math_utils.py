@@ -1,13 +1,9 @@
 """Utility functions that perform mathematical operations with preset parameters"""
 import logging
-from typing import Callable
 
-import mpmath
 import sympy.core.numbers
 from sympy import Symbol, sympify, limit_seq, simplify
 from sympy.core.numbers import Number
-
-import constants
 
 logger = logging.getLogger('rm_web_app')
 

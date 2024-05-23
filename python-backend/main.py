@@ -1,24 +1,31 @@
 """Entrypoint for the application and REST API handlers"""
 import json
+import secrets
 import sys
 from pathlib import Path
+from typing import Annotated
+
+import mpmath
+from fastapi import Depends, FastAPI, HTTPException, Request, status, WebSocket, WebSocketDisconnect, WebSocketException
+from fastapi.responses import JSONResponse, FileResponse, RedirectResponse
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
+from fastapi.staticfiles import StaticFiles
+from ramanujan import pcf
+from sympy import sympify
+from sympy.core.numbers import Infinity
 
 import call_wrapper
 import constants
 import logger
-import mpmath
-from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect, WebSocketException
-from fastapi.responses import JSONResponse, FileResponse, RedirectResponse
-from fastapi.staticfiles import StaticFiles
+from custom_secrets import CustomSecrets
 from graph_utils import (chart_coordinates)
 from input import Input, Expression, parse
 from math_utils import laurent, assess_convergence
-from ramanujan import pcf
-from sympy import sympify
-from sympy.core.numbers import Infinity
 from wolfram_client import WolframClient
 
 sys.set_int_max_str_digits(0)
+
+security = HTTPBasic()
 
 app = FastAPI()
 
@@ -29,23 +36,51 @@ mpmath.mp.dps = constants.DEFAULT_PRECISION
 app.mount("/form", StaticFiles(directory="build"), name="react")
 
 
+def auth(creds: Annotated[HTTPBasicCredentials, Depends(security)]):
+    """
+
+    Parameters
+    ----------
+    creds : HTTPBasicCredentials username and password
+
+    Returns
+    -------
+    True if the credentials are valid, raises HTTPException with 401 Unauthorized otherwise
+    """
+    input_user = creds.username.encode("utf8")
+    correct_user = CustomSecrets.BasicUser.encode("utf8")
+    input_pass = creds.password.encode("utf8")
+    correct_pass = CustomSecrets.BasicPassword.encode("utf8")
+    if not (secrets.compare_digest(input_user, correct_user) and secrets.compare_digest(input_pass, correct_pass)):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid credentials",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+
+    logger.info("user authenticated")
+    return True
+
+
 @app.get("/")
-def default() -> RedirectResponse:
+def default(authenticated=Depends(auth)) -> RedirectResponse:
     """
     Make sure to redirect bare IP/url to form landing page
     """
-    return RedirectResponse(url='/form')
+    if authenticated:
+        return RedirectResponse(url='/form')
 
 
 @app.get("/form")
-def serve_frontend() -> FileResponse:
+def serve_frontend(authenticated=Depends(auth)) -> FileResponse:
     """
     Serves static React UI - facilitates embedding as iframe
     """
-    project_path = Path(__file__).parent.resolve()
-    response = FileResponse(str(project_path / "build/index.html"), media_type="text/html")
-    response.headers["X-Frame-Options"] = "ALLOW-FROM https://www.ramanujanmachine.com"
-    return response
+    if authenticated:
+        project_path = Path(__file__).parent.resolve()
+        response = FileResponse(str(project_path / "build/index.html"), media_type="text/html")
+        response.headers["X-Frame-Options"] = "ALLOW-FROM https://www.ramanujanmachine.com"
+        return response
 
 
 @app.post("/verify")

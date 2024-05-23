@@ -6,9 +6,8 @@ LABEL description="Ramanujan Machine Web Portal"
 # set working directory
 WORKDIR /srv/ramanujan-machine-web-portal
 
-# set env var for Wolfram API token which should be passed in via docker build
-ARG wolfram_app_id
-ENV WOLFRAM_APP_ID=$wolfram_app_id
+ARG public_ip
+ENV PUBLIC_IP=$public_ip
 
 # install system dependencies
 RUN apt-get update
@@ -23,7 +22,8 @@ RUN npm i -g n && n lts && npm i -g npm@latest
 COPY react-frontend ./react-frontend
 WORKDIR /srv/ramanujan-machine-web-portal/react-frontend
 # install NodeJS dependencies
-RUN npm install
+RUN npm ci
+RUN echo "VITE_PUBLIC_IP=${PUBLIC_IP}" > .env.production
 # generate deployable artifacts
 RUN npm run build
 
@@ -33,10 +33,10 @@ ENV BKPATH=$PATH
 COPY python-backend ./python-backend
 RUN cp -rf react-frontend/build python-backend/build
 WORKDIR /srv/ramanujan-machine-web-portal/python-backend
+RUN --mount=type=secret,id=creds cat /run/secrets/creds >> .env
 RUN rm -rf venv
 RUN python3 -m venv venv
 RUN . venv/bin/activate
-RUN ./venv/bin/python -m pip install uvicorn
 RUN ./venv/bin/python -m pip install -r /srv/ramanujan-machine-web-portal/python-backend/requirements.txt
 ENV PATH=$BKPATH
 RUN unset VIRTUAL_ENV
