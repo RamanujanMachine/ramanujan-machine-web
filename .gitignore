@@ -33,6 +33,7 @@ react-frontend/cypress/screenshots/
 react-frontend/cypress/videos/
 
 # BACKEND
+.creds
 .idea
 .env
 __pycache__/

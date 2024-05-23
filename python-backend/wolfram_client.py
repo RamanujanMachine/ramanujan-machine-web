@@ -8,7 +8,7 @@ from json import JSONDecodeError
 import requests
 
 from custom_exceptions import APIError
-from secrets import Secrets
+from custom_secrets import CustomSecrets
 
 logger = logging.getLogger('rm_web_app')
 
@@ -25,7 +25,7 @@ class WolframClient:
         cross-check our results. Refer to https://products.wolframalpha.com/api/documentation for usage.
         :return: result of wolfram query in JSON
         """
-        params = {"appid": Secrets.WolframAppId,
+        params = {"appid": CustomSecrets.WolframAppId,
                   "input": query,
                   "output": "json",
                   "format": 'plaintext,moutput'}

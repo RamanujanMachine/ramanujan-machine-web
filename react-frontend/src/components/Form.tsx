@@ -72,7 +72,7 @@ function Form() {
 		setWaitingForResponse(true);
 		setNoConvergence(false);
 
-		let websocket = new WebSocket('ws://localhost/data');
+		let websocket = new WebSocket(`ws://${import.meta.env.VITE_PUBLIC_IP}/data`);
 
 		websocket.onopen = () => {
 			console.log('socket connection opened');

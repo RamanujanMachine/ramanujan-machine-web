@@ -181,7 +181,7 @@ function Charts({ a_n, b_n, limit, symbol, convergesTo, deltaData, toggleDisplay
 		return text;
 	};
 
-	// we get constant/symbol metadata from both wolfram and LIReC and we need to consolidate into 
+	// we get constant/symbol metadata from both wolfram and LIReC and we need to consolidate into
 	// a unified format to prevent duplicates and line up the attribute names
 	const polishMetadata = (input: WolframMetadata) => {
 		let name = wolframTextCleanup(input.text);
@@ -336,17 +336,21 @@ function Charts({ a_n, b_n, limit, symbol, convergesTo, deltaData, toggleDisplay
 				) : (
 					''
 				)}
-				<div className="top-padding plot-container">
-					<p>
-						Delta is a measure of the irrationality of a number (read more about it{' '}
-						<a href="https://www.ramanujanmachine.com/the-mathematics-of-polynomial-continued-fractions/irrationality-testing/">
-							here
-						</a>
-						). The given Polynomial Continued Fraction produces the following finite-depth
-						estimations for Delta:
-					</p>
-					<ScatterPlot id="delta_chart" data={deltaData} />
-				</div>
+				{deltaData && deltaData?.length > 0 ? (
+					<div className="top-padding plot-container">
+						<p>
+							Delta is a measure of the irrationality of a number (read more about it{' '}
+							<a href="https://www.ramanujanmachine.com/the-mathematics-of-polynomial-continued-fractions/irrationality-testing/">
+								here
+							</a>
+							). The given Polynomial Continued Fraction produces the following finite-depth
+							estimations for Delta:
+						</p>
+						<ScatterPlot id="delta_chart" data={deltaData} />
+					</div>
+				) : (
+					''
+				)}
 			</MathJaxContext>
 			<button
 				onClick={() => {
