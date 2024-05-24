@@ -20,7 +20,7 @@ React was used in conjunction with Typescript to build the user interfaces.
 
 [math.js](http://math.js) is used to parse and validate mathematical expressions.
 
-Python was used to build the [FastAPI](https://fastapi.tiangolo.com/) web server that serves the [React](https://react.dev/) web portal user interface, as well as the [gRPC](https://grpc.io/docs/languages/python/quickstart/) server that wraps one of the underlying dependencies.
+Python was used to build the [FastAPI](https://fastapi.tiangolo.com/) web server, running on [uvicorn](https://www.uvicorn.org/). The web server serves the [React](https://react.dev/) web portal user interface, as well as the [gRPC](https://grpc.io/docs/languages/python/quickstart/) server that wraps one of the underlying dependencies.
 
 [Docker](https://www.docker.com/products/docker-desktop/) was used to build and bundle the web server, gRPC server and UI as well as their underlying dependencies.
 
