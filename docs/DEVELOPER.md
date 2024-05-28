@@ -299,3 +299,31 @@ GitHub's Dependabot should be enabled for the repository. It will create PRs for
 To maintain the React dependencies on your own, you can invoke `npm outdated` to see a list of dependencies that need attention. The concerning ones will be presented in red type. From here you can upgrade dependencies using `npm upgrade <package name>`.
 
 For both python-backend and lirec-grpc-server, upgrade the Python dependencies listed in the requirements.txt file however you choose, making sure to freeze them back to the requirements file when finished.
+
+### 7.2 Troubleshooting
+
+#### 7.2.1 Front-End Debugging
+
+To diagnose <em>whether</em> an issue is UI related, load the web portal in a browser with the dev tools open. The following is what this looks like in Chrome, but similar dev tools are now available in all major browsers.
+
+![img_3.png](img_3.png)
+
+You can see Javascript errors in the Console tab of the dev tools.
+
+![img_6.png](img_6.png)
+
+Many issues will be a result of interaction with the web server. You must have the dev tools open and on the "Network" subtab before you access the portal (or refresh the portal and re-perform the problematic action) to catch all REST and socket traffic in the Network tab.
+
+![img_4.png](img_4.png)
+
+You can drill into each request/response. The web socket connection can be found under the `data` heading. Clicking on it will open all messages passed to and received from the web socket.
+
+![img_5.png](img_5.png)
+
+#### 7.2.2 Backend Debugging
+
+1. SSH to the host machine
+2. Run `docker container ls` to list the container that is running
+3. Run `docker logs <CONTAINER ID>` to see the standard out for the container 
+
+You can also run `docker exec -ti <CONTAINER ID> /bin/bash` to drop into the shell on the container. The hardcoded log file name is `rm_web_app.log`. It should be found in both the python-backend and lirec-grpc-server directories.
