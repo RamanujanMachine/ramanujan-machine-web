@@ -68,7 +68,7 @@ function PolynomialInput({
 			} else {
 				setLocalPoly(p);
 				try {
-					parse(p);
+					parse(p.replaceAll('**', '^'));
 					valid();
 				} catch (e) {
 					invalid(e!.toString());
