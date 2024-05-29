@@ -82,15 +82,15 @@ function Charts({ a_n, b_n, limit, symbol, convergesTo, deltaData, toggleDisplay
 		let [b1, b2, b3] = [b_n, b_n, b_n];
 		if (symbol) {
 			if (a_n.indexOf(symbol) >= 0) {
-				a0 = parse(a_n.replace(symbol, '0')).evaluate();
-				a1 = parse(a_n.replace(symbol, '1')).evaluate();
-				a2 = parse(a_n.replace(symbol, '2')).evaluate();
-				a3 = parse(a_n.replace(symbol, '3')).evaluate();
+				a0 = parse(a_n.replaceAll(symbol, '0').replaceAll('**','^')).evaluate();
+				a1 = parse(a_n.replaceAll(symbol, '1').replaceAll('**','^')).evaluate();
+				a2 = parse(a_n.replaceAll(symbol, '2').replaceAll('**','^')).evaluate();
+				a3 = parse(a_n.replaceAll(symbol, '3').replaceAll('**','^')).evaluate();
 			}
 			if (b_n.indexOf(symbol) >= 0) {
-				b1 = parse(b_n.replace(symbol, '1')).evaluate();
-				b2 = parse(b_n.replace(symbol, '2')).evaluate();
-				b3 = parse(b_n.replace(symbol, '3')).evaluate();
+				b1 = parse(b_n.replaceAll(symbol, '1').replaceAll('**','^')).evaluate();
+				b2 = parse(b_n.replaceAll(symbol, '2').replaceAll('**','^')).evaluate();
+				b3 = parse(b_n.replaceAll(symbol, '3').replaceAll('**','^')).evaluate();
 			}
 		}
 		let parsed = parse(`${a0} + (${b1} / (${a1} + (${b2} / (${a2} + (${b3} / (${a3} + dots))))))`);
@@ -322,7 +322,7 @@ function Charts({ a_n, b_n, limit, symbol, convergesTo, deltaData, toggleDisplay
 											</MathJax>
 											{typeof entry.url != 'undefined' ? (
 												<a className="metadata" href={entry.url} target="_blank" rel="noreferrer">
-														&nbsp;&#x1F517;
+													&nbsp;&#x1F517;
 												</a>
 											) : (
 												''
