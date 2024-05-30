@@ -42,7 +42,7 @@ class WolframClient:
         else:
             try:
                 result = json.loads(result.content)
-                logger.debug(result)
+                logger.debug(f"Wolfram Response: {result}")
                 try:
                     raise APIError(result["queryresult"]["error"]["msg"])
                 except (AttributeError, TypeError):
@@ -70,8 +70,12 @@ class WolframClient:
             # only want to return: queryresult -> pods[0] -> subpods
             # infos has metadata on the subpods e.g. the constant names and links to reference content
             # Note: the index of the infos does not line up with the index of the closed form results
-            subpods = result["queryresult"]["pods"][0]["subpods"]
-            meta = result["queryresult"]["pods"][0].get("infos", [])
-            return {"closed_forms": subpods, "metadata": meta}
+            if int(result["queryresult"]["numpods"]) > 0:
+                subpods = result["queryresult"]["pods"][0]["subpods"]
+                meta = result["queryresult"]["pods"][0].get("infos", [])
+                return {"closed_forms": subpods, "metadata": meta}
+            else:
+                return {}
         except Exception as e:
             logger.error("Failed to obtain Wolfram API result", e)
+
