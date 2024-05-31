@@ -7,6 +7,7 @@ from json import JSONDecodeError
 
 import requests
 
+from constants import WOLFRAM_CHAR_LIMIT
 from custom_exceptions import APIError
 from custom_secrets import CustomSecrets
 
@@ -61,12 +62,12 @@ class WolframClient:
         """
         try:
             # Wolfram has a 200 character input limit
-            assert len(expression) <= 200
+            assert len(expression) <= WOLFRAM_CHAR_LIMIT
         except AssertionError:
             logger.warning("Truncating decimal value to 200 characters to keep within Wolfram API query limit")
 
         try:
-            result = WolframClient.ask(query=expression[:200], include_pod="PossibleClosedForm")
+            result = WolframClient.ask(query=expression[:WOLFRAM_CHAR_LIMIT], include_pod="PossibleClosedForm")
             # only want to return: queryresult -> pods[0] -> subpods
             # infos has metadata on the subpods e.g. the constant names and links to reference content
             # Note: the index of the infos does not line up with the index of the closed form results
