@@ -115,8 +115,6 @@ Typescript settings can be found in the tsconfig.json file. Typescript is simply
 vite.config.js is where Vite settings reside. The frontend makes use of Vite to provide common local development tooling, including a lightweight development server with hot reload.
 #### index.html
 index.html is the template used during the frontend build process. It does not require modification. Any changes made to the body of this file will be replaced when the React code is bundled.
-#### .prettierrc 
-.prettierrc defines style preferences and is picked up by modern IDEs to format the code as you work. 
 #### .eslintrc.json
 .eslintrc.json  defines style preferences and is picked up by modern IDEs to format the code as you work. 
 #### .eslintignore
@@ -187,9 +185,13 @@ You should be able to open any browser and access the web portal running in dock
 What follows is the details for how to deploy the components without the automation that the Dockerfile provides. 
 Set your environment variables. 
 
+#### 4.2.1. Environment 
+
 `WOLFRAM_APP_ID` to your Wolfram provided app ID.
 
 `VITE_PUBLIC_IP` to `localhost` or wherever you plan to launch the python-backend.
+
+#### 4.2.2. React Web Portal UI
 
 From within the react-frontend directory, execute the following commands.
 
@@ -205,6 +207,8 @@ This command spins up a local server. It will inform you of the URL on which the
 
     $ npm run serve
 
+#### 4.2.3. Python FastAPI Web API
+
 From within the python-backend directory, create a virtual environment, activate it and install the dependencies found in the requirements.txt file. 
 
 Note: The Docker application runs on ubuntu latest, and it was necessary to install the following Linux packages prior to installing all of the Python dependencies: 
@@ -218,6 +222,8 @@ Note: The Docker application runs on ubuntu latest, and it was necessary to inst
 Start the web server with the following command:
 
     uvicorn main:app --host "0.0.0.0" --port 80 &
+
+#### 4.2.4. Python gRPC Server
 
 Install the following Python packages globally:  
 	grpcio  
@@ -327,3 +333,61 @@ You can drill into each request/response. The web socket connection can be found
 3. Run `docker logs <CONTAINER ID>` to see the standard out for the container 
 
 You can also run `docker exec -ti <CONTAINER ID> /bin/bash` to drop into the shell on the container. The hardcoded log file name is `rm_web_app.log`. It should be found in both the python-backend and lirec-grpc-server directories.
+
+## 8. End-to-End Flow
+
+**The following section includes GitHub permalinks to the code being described.**
+
+The landing page, to which the root path `/` redirects, is the `/form` path. 
+
+![alt text](image.png)
+
+When a user enters values for a<sub>n</sub> and b<sub>n</sub>, some [live validation](https://github.com/gt-sse-center/ramanujan-machine-web/blob/2d15eeec6ed7cab2193054ae17a72eccaea820fe/react-frontend/src/components/PolynomialInput.tsx#L51-L78) is performed triggered by the `onChange` Javascript event handler.
+
+If the field has been visited but the value is left blank, a warning is displayed. 
+If the field is longer than `MAX_INPUT_LENGTH` (currently at 100 characters) a warning is displayed.
+If more than one symbol/variable is in use in the expression, a warning is displayed.
+
+If none of these issues are identified, the expression is [sanitized](https://github.com/gt-sse-center/ramanujan-machine-web/blob/2d15eeec6ed7cab2193054ae17a72eccaea820fe/react-frontend/src/components/PolynomialInput.tsx#L37-L40) down to valid mathematical characters using this regular expression `/[^^()a-zA-Z0-9* ./+-]+/g`. Anything that matches this group is replaced with the empty string `''`'. For those unfamiliar with regular expressions, this regular expression indicates that we are matching anything that is not present between `[^` and `]`. if a new character is added to the list of allowed characters it is to be added after the opening `/[^` and before the closing `]`. This expression basically only allows these characters (there's even a space in there): `^()a-zA-Z0-9* ./+-`.
+
+After both a<sub>n</sub> and b<sub>n</sub> pass validation individually, [they get checked](https://github.com/gt-sse-center/ramanujan-machine-web/blob/096b71a1bdf2ce05706fb27f8ac7a09e30ef0eb0/react-frontend/src/components/Form.tsx#L37-L48) for use of more than one symbol/variable across both inputs.
+
+When the user enters a value for n, [that value gets forced into the range 0-10000](https://github.com/gt-sse-center/ramanujan-machine-web/blob/096b71a1bdf2ce05706fb27f8ac7a09e30ef0eb0/react-frontend/src/components/Form.tsx#L60-L64).
+
+After all form fields successfully validate, the user can click the `Analyze` button, at which point a websocket connection is opened to the FastAPI server `/data` endpoint and the form inputs are sent across. 
+
+The `/data` socket endpoint starts by [parsing the form inputs](https://github.com/gt-sse-center/ramanujan-machine-web/blob/5e284a2edc7f45edd030dc39daf298f21ab0d140/python-backend/input.py#L33-L68). A `Symbol` is created for the variable. `^` is replaced with `**` if it is present, and `*` is inserted in all locations where multiplication is implied. The expressions are then "sympified".
+
+Convergence is assessed using an adapted version of [LIReC's algorithm](https://github.com/RamanujanMachine/LIReC/blob/6626543aaea9800d58bddfd8eddf35a40fe74520/LIReC/devutils/laurent.py#L6-L28). The result, of the form `{"is_convergent": True | False}`, is sent back in the web socket and handled by the React app. If the result is `False`, then the socket is closed to prevent unnecessary further computation.
+
+If the process is continuing, `call_wrapper.pcf_limit()` is invoked, creating a ResearchTools `PCF` with the user inputs, invoking the `limit()` method on that PCF, and then invoking the `as_rounded_number()` method on that result. This logic can be found [here](https://github.com/gt-sse-center/ramanujan-machine-web/blob/7b1ac325a469dcab68bbb72faaa24bf6f4efacc4/python-backend/call_wrapper.py#L28-L40). The result is then sent back on the web socket as `{"limit": "..."}`.
+
+Processing then proceeds to [LIReC](https://github.com/gt-sse-center/ramanujan-machine-web/blob/7b1ac325a469dcab68bbb72faaa24bf6f4efacc4/python-backend/call_wrapper.py#L43-L56), invoking `identify()` via gRPC to maintain virtual environment isolation, since, as of this writing, both ResearchTools and LIReC were needed by the web portal but could not coexist in the same virtual environment due to underlying dependency conflicts. `lirec-grpc-server` provides a gRPC wrapper for LIReC to run in its own virtual environment. The `protos/lirec.proto` file defines the interface. Both `python-backend` and `lirec-grpc-server` require a `protoc` generated copy of `lirec_pb2.py` and `lirec_pb2_grpc.py` to exchange messages.
+
+The results returned by `identify()` are returned to the React UI as `{"converges_to": json.dumps(json_computed_values)}`. 
+
+The last step in the process of handling the user's inputs is a call to [graph_utils.chart_coordinates()](https://github.com/gt-sse-center/ramanujan-machine-web/blob/7b1ac325a469dcab68bbb72faaa24bf6f4efacc4/python-backend/graph_utils.py#L24-L38) which reformats the output of the ResearchTools PCF class delta_sequence() list into x,y pairs for charting in the UI React app. This data is returned to the React UI in the form: `{"delta": json.dumps(delta_x_y_pairs)}`;
+
+The React app waits for each web socket response to come back separately and acts on each as it arrives.
+
+It first displays the continued fraction form of the user's inputs, after some [Javascript processing](https://github.com/gt-sse-center/ramanujan-machine-web/blob/2d15eeec6ed7cab2193054ae17a72eccaea820fe/react-frontend/src/components/Charts.tsx#L80-L100).
+
+![img_7.png](img_7.png)
+
+The Charts.tsx component watches for changes to the `limit` value, which is set when the `limit` key comes in on the web socket. The value is displayed as received.
+
+![img_9.png](img_9.png)
+
+When the limit value changes, a request to the `python-backend` `/verify` endpoint is sent with the limit value. This REST endpoint then [issues an API request to Wolfram Alpha](https://github.com/gt-sse-center/ramanujan-machine-web/blob/096b71a1bdf2ce05706fb27f8ac7a09e30ef0eb0/python-backend/wolfram_client.py#L57-L78), **trimming the limit to 200 characters (the free API limit)**.
+
+The result is sent back to the React UI where [the closed forms are parsed by mathjs and formatted for display with MathJax](https://github.com/gt-sse-center/ramanujan-machine-web/blob/2d15eeec6ed7cab2193054ae17a72eccaea820fe/react-frontend/src/components/Charts.tsx#L149-L168) and [the metadata returned is restructured to prevent duplicates](https://github.com/gt-sse-center/ramanujan-machine-web/blob/2d15eeec6ed7cab2193054ae17a72eccaea820fe/react-frontend/src/components/Charts.tsx#L186-L195). Wolfram results are not displayed if there are none.
+
+![img_10.png](img_10.png)
+
+When the `converges_to` key is returned via web socket to the React UI carrying the LIReC computed closed form representation(s), the content is [formatted to align with the Wolfram closed forms and metadata, and to prepare for display with mathjs and MathJax](https://github.com/gt-sse-center/ramanujan-machine-web/blob/2d15eeec6ed7cab2193054ae17a72eccaea820fe/react-frontend/src/components/Charts.tsx#L102-L147). The result is then displayed, if there is one.
+
+![img_11.png](img_11.png)
+
+The ScatterPlot React component waits for the `delta` sequence data. If sequence data arrives, a d3 chart is rendered.
+
+![img_12.png](img_12.png)

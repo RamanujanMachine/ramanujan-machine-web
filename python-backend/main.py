@@ -119,7 +119,6 @@ async def data_socket(websocket: WebSocket):
     while True:
         try:
             data = Input(**(await websocket.receive_json()))
-            logger.debug('received data. parsing...')
             iterations = data.i
             (a_func, a, b_func, b, symbol, precision) = parse(data)
 
@@ -136,10 +135,9 @@ async def data_socket(websocket: WebSocket):
                         await websocket.close()
 
                 limit = call_wrapper.pcf_limit(sympify(data.a), sympify(data.b), iterations)
-                logger.debug(f"last convergent / limit: {limit}")
+                logger.debug(f"limit: {limit}")
                 await websocket.send_json({"limit": "Infinity" if type(limit) is Infinity else str(limit)})
 
-                logger.debug(f"limit type: {type(limit)}")
                 computed_values: list[str] = call_wrapper.lirec_identify(limit)
                 json_computed_values = []
                 for m in computed_values:

@@ -6,3 +6,5 @@ DEFAULT_PRECISION = 30
 VERBOSE_EVAL = False
 # when calling ResearchTools, only way this many seconds before throwing a timeout exception
 EXTERNAL_PROCESS_TIMEOUT = 10
+# the free Wolfram API limits queries to 200 characters
+WOLFRAM_CHAR_LIMIT = 200
