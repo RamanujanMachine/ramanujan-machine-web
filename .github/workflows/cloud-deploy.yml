@@ -87,3 +87,8 @@ jobs:
     - name: Run Docker container on EC2 instance
       run: |
         ssh ec2 "sudo docker run -p 80:80 -d ramanujan-machine-web-portal:latest"
+
+    
+    - name: Run Docker container on EC2 instance
+      run: |
+        ssh ec2 "sudo docker system prune -f"
