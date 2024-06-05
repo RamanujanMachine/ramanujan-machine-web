@@ -66,6 +66,7 @@ jobs:
       env:
         EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
       run: |
+        echo $EC2_USERNAME
         scp image.tar.gz ec2:/home/$EC2_USERNAME
 
     - name: Stop Running Container
@@ -76,12 +77,14 @@ jobs:
       env:
         EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
       run: |
-        ssh ec2 "docker load -i /home/${EC2_USERNAME}/image.tar.gz"
+        echo $EC2_USERNAME
+        ssh ec2 "docker load -i /home/$EC2_USERNAME/image.tar.gz"
 
     - name: Delete Gzipped Image Tarball
       env:
         EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
       run: |
+        echo $EC2_USERNAME
         ssh ec2 "rm -f /home/$EC2_USERNAME/image.tar.gz"
 
     - name: Run Docker container on EC2 instance
