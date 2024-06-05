@@ -66,27 +66,24 @@ jobs:
       env:
         EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
       run: |
-        echo $EC2_USERNAME
         scp image.tar.gz ec2:/home/$EC2_USERNAME
 
     - name: Stop Running Container
       run: | 
-        ssh ec2 'docker ps -q | xargs --no-run-if-empty docker stop | xargs --no-run-if-empty docker rm'
+        ssh ec2 'sudo docker ps -q | xargs --no-run-if-empty docker stop | xargs --no-run-if-empty docker rm'
 
     - name: Configure Docker & Load Image
       env:
         EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
       run: |
-        echo $EC2_USERNAME
-        ssh ec2 "docker load -i /home/$EC2_USERNAME/image.tar.gz"
+        ssh ec2 "sudo docker load -i /home/$EC2_USERNAME/image.tar.gz"
 
     - name: Delete Gzipped Image Tarball
       env:
         EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
       run: |
-        echo $EC2_USERNAME
         ssh ec2 "rm -f /home/$EC2_USERNAME/image.tar.gz"
 
     - name: Run Docker container on EC2 instance
       run: |
-        ssh ec2 "docker run -p 80:80 -d ramanujan-machine-web-portal:latest"
+        ssh ec2 "sudo docker run -p 80:80 -d ramanujan-machine-web-portal:latest"
