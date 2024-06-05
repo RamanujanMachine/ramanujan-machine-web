@@ -63,6 +63,8 @@ jobs:
         END
 
     - name: Copy Docker image to EC2 instance
+      env:
+        EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
       run: |
         scp image.tar.gz ec2:/home/$EC2_USERNAME
 
@@ -71,10 +73,14 @@ jobs:
         ssh ec2 'docker ps -q | xargs --no-run-if-empty docker stop | xargs --no-run-if-empty docker rm'
 
     - name: Configure Docker & Load Image
+      env:
+        EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
       run: |
-        ssh ec2 "docker load -i /home/$EC2_USERNAME/image.tar.gz"
+        ssh ec2 "docker load -i /home/${EC2_USERNAME}/image.tar.gz"
 
     - name: Delete Gzipped Image Tarball
+      env:
+        EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
       run: |
         ssh ec2 "rm -f /home/$EC2_USERNAME/image.tar.gz"
 
