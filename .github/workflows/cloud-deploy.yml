@@ -64,7 +64,7 @@ jobs:
 
     - name: Copy Docker image to EC2 instance
       run: |
-        scp image.tar.gz ec2:/home/ubuntu
+        scp image.tar.gz ec2:/home/$EC2_USERNAME
 
     - name: Stop Running Container
       run: | 
@@ -72,11 +72,11 @@ jobs:
 
     - name: Configure Docker & Load Image
       run: |
-        ssh ec2 "docker load -i /home/ubuntu/image.tar.gz"
+        ssh ec2 "docker load -i /home/$EC2_USERNAME/image.tar.gz"
 
     - name: Delete Gzipped Image Tarball
       run: |
-        ssh ec2 "rm -f /home/ubuntu/image.tar.gz"
+        ssh ec2 "rm -f /home/$EC2_USERNAME/image.tar.gz"
 
     - name: Run Docker container on EC2 instance
       run: |
