@@ -11,4 +11,4 @@ requests>=2.31.0
 sympy>=1.12
 uvicorn>=0.29.0
 websockets>=12.0
-ramanujan@git+https://github.com/RamanujanMachine/ResearchTools.git@master
+ramanujantools@git+https://github.com/RamanujanMachine/RamanujanTools.git@master
