@@ -6,7 +6,7 @@ import lirec_pb2
 import sympy.core.numbers
 from constants import EXTERNAL_PROCESS_TIMEOUT
 import lirec_pb2_grpc
-from ramanujan.pcf import PCF
+from ramanujantools.pcf import PCF
 
 logger = logging.getLogger('rm_web_app')
 

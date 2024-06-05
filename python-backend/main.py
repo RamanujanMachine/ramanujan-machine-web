@@ -10,7 +10,7 @@ from fastapi import Depends, FastAPI, HTTPException, Request, status, WebSocket,
 from fastapi.responses import JSONResponse, FileResponse, RedirectResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.staticfiles import StaticFiles
-from ramanujan import pcf
+from ramanujantools import pcf
 from sympy import sympify
 from sympy.core.numbers import Infinity
 

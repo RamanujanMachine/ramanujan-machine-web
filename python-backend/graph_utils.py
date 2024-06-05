@@ -6,7 +6,7 @@ from typing import TypedDict
 import mpmath
 import sympy
 from fastapi import WebSocket
-from ramanujan import pcf as pcf_module
+from ramanujantools import pcf as pcf_module
 
 GRAPHABLE_TYPES = (int, float, sympy.core.numbers.Integer, sympy.core.numbers.Float)
 
