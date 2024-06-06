@@ -36,18 +36,18 @@ jobs:
         ls -al image.tar*
 
 
-    - name: Prepare SSH Dir
+    - name: Prepare SSH dir
       run: |
         mkdir -pv ~/.ssh/
 
-    - name: Write Key
+    - name: Write key
       env:
         EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
       run: |
         echo "$EC2_SSH_KEY" > ~/.ssh/actions.key
         chmod 600 ~/.ssh/actions.key
 
-    - name: Write SSH Config
+    - name: Write SSH config
       env:
         EC2_HOST: ${{ secrets.EC2_HOST }}
         EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
@@ -68,17 +68,22 @@ jobs:
       run: |
         scp image.tar.gz ec2:/home/$EC2_USERNAME
 
-    - name: Stop Running Container
+    - name: Ensure Docker is installed and running
+      run: |
+        ssh ec2 'sudo yum install docker'
+        ssh ec2 'sudo systemctl start docker'   
+       
+    - name: Stop running container
       run: | 
         ssh ec2 'sudo docker ps -q | xargs --no-run-if-empty docker stop | xargs --no-run-if-empty docker rm'
 
-    - name: Configure Docker & Load Image
+    - name: Configure Docker & load lmage
       env:
         EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
       run: |
         ssh ec2 "sudo docker load -i /home/$EC2_USERNAME/image.tar.gz"
 
-    - name: Delete Gzipped Image Tarball
+    - name: Delete gzipped image tarball
       env:
         EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
       run: |
