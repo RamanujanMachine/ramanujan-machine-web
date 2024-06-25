@@ -138,7 +138,8 @@ async def data_socket(websocket: WebSocket):
                 logger.debug(f"limit: {limit}")
                 await websocket.send_json({"limit": "Infinity" if type(limit) is Infinity else str(limit)})
 
-                computed_values: list[str] = call_wrapper.lirec_identify(limit)
+                [computed_values, see_also] = call_wrapper.lirec_identify(limit)
+
                 json_computed_values = []
                 for m in computed_values:
                     logger.debug(f"identify returned: {m}")
@@ -146,6 +147,15 @@ async def data_socket(websocket: WebSocket):
 
                 await websocket.send_json(
                     {"converges_to": json.dumps(json_computed_values)}
+                )
+
+                json_see_also = []
+                for m in see_also:
+                    logger.debug(f"identify returned see_also: {m}")
+                    json_see_also.append(str(m))
+
+                await websocket.send_json(
+                    {"see_also": json.dumps(json_see_also)}
                 )
 
                 await chart_coordinates(pcf=pcf.PCF(sympify(data.a), sympify(data.b)),

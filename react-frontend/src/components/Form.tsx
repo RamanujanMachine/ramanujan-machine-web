@@ -21,6 +21,7 @@ function Form() {
 	const [noConvergence, setNoConvergence] = useState(false);
 	const [waitingForResponse, setWaitingForResponse] = useState(false);
 	const [convergesTo, setConvergesTo] = useState([]);
+	const [seeAlso, setSeeAlso] = useState([]);
 	const [limit, setLimit] = useState('');
 	const [deltaData, setDeltaData] = useState<CoordinatePair[]>([]);
 
@@ -29,6 +30,7 @@ function Form() {
 	}, []);
 
 	const resetState = function () {
+		setSeeAlso([]);
 		setConvergesTo([]);
 		setLimit('');
 		setDeltaData([]);
@@ -113,6 +115,8 @@ function Form() {
 				}
 			} else if (Object.hasOwn(message, 'converges_to')) {
 				setConvergesTo(JSON.parse(message.converges_to));
+			} else if (Object.hasOwn(message, 'see_also')) {
+				setSeeAlso(JSON.parse(message.see_also));
 			} else if (Object.hasOwn(message, 'delta')) {
 				const incomingDeltaData = JSON.parse(message.delta);
 				if (incomingDeltaData.length > 0) {
@@ -193,6 +197,7 @@ function Form() {
 					limit={limit}
 					symbol={isolateSymbol()}
 					convergesTo={convergesTo}
+					seeAlso={seeAlso}
 					deltaData={deltaData}
 					toggleDisplay={() => {
 						setNoConvergence(false);

@@ -268,7 +268,7 @@ div.chart-container {
 	padding: 1.2rem;
 	text-align: left;
 	font-size: 1.3rem;
-	width: 600px;
+	width: 900px;
 	margin-left: auto;
 	margin-right: auto;
 	border-radius: var(--radius);
@@ -291,6 +291,11 @@ div.closed-form {
 	margin: 0.5rem;
 	background-color: var(--muted-light);
 	border-radius: var(--radius);
+	display: flex;
+	flex-wrap: wrap;
+	& span {
+		align-self: center;
+	}
 }
 p.footnote {
 	font-size: 0.8rem;
@@ -379,6 +384,9 @@ div.flex-wrapper {
 div.flex-child {
 	flex: 1;
 	align-self: baseline;
+}
+div.align-self-center {
+	align-self: center;
 }
 .metadata {
 	font-size: 0.8rem;

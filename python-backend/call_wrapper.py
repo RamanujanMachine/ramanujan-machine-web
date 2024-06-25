@@ -40,7 +40,7 @@ def pcf_limit(a, b, n) -> str:
         signal.alarm(0)
 
 
-def lirec_identify(limit) -> list[sympy.core.numbers.Number]:
+def lirec_identify(limit) -> [list[sympy.core.numbers.Number], list[sympy.core.numbers.Number]]:
     """
     Invokes LIReC pslq algorithm
     """
@@ -49,7 +49,7 @@ def lirec_identify(limit) -> list[sympy.core.numbers.Number]:
             stub = lirec_pb2_grpc.LIReCStub(channel)
             request = lirec_pb2.IdentifyRequest(limit=limit)
             response = stub.Identify(request)
-            return response.closed_forms
+            return [response.closed_forms, response.see_also]
     except TimeoutError:
         logger.error("Function execution timed out after {} seconds".format(EXTERNAL_PROCESS_TIMEOUT))
     finally:
