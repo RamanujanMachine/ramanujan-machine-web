@@ -334,6 +334,11 @@ const constants: { [abbrev: string]: Constant } = {
 		url: 'https://mathworld.wolfram.com/WeierstrassConstant.html'
 	},
 	W: { name: 'Wallis Constant', url: 'https://mathworld.wolfram.com/WallissConstant.html' },
+	Zeta2: {
+		replacement: 'ζ(2)',
+		name: 'Riemann Zeta Function',
+		url: 'https://en.wikipedia.org/wiki/Riemann_zeta_function'
+	},
 	Zeta3: {
 		replacement: 'ζ(3)',
 		name: 'Apery Constant',
