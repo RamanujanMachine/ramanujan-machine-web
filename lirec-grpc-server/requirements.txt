@@ -1,5 +1,5 @@
 numpy==1.26.4
-setuptools==65.5.1
+setuptools==70.0.0
 packaging==24.0
 logger==1.4
 gmpy2==2.2.0a1
