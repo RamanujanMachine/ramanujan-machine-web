@@ -70,7 +70,7 @@ jobs:
 
     - name: Ensure Docker is installed and running
       run: |
-        ssh ec2 'sudo yum install docker'
+        ssh ec2 'sudo snap install docker'
         ssh ec2 'sudo systemctl start docker'   
        
     - name: Stop running container
