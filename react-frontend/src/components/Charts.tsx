@@ -12,6 +12,7 @@ interface ChartProps {
 	limit?: string;
 	symbol: string;
 	convergesTo?: string[];
+	seeAlso?: string[];
 	deltaData?: CoordinatePair[];
 	toggleDisplay: () => void;
 }
@@ -41,12 +42,14 @@ type ConstantMetadataWrapper = {
 	[key: string]: ConstantMetadata;
 };
 
-function Charts({ a_n, b_n, limit, symbol, convergesTo, deltaData, toggleDisplay }: ChartProps) {
+function Charts({ a_n, b_n, limit, symbol, convergesTo, seeAlso, deltaData, toggleDisplay }: ChartProps) {
 	const [wolframResults, setWolframResults] = useState<WolframResult[]>();
 	const [constantMetadata, setConstantMetadata] = useState<Record<string, ConstantMetadata>>({});
 	const [lirecClosedForm, setLirecClosedForm] = useState<string[]>();
+	const [seeAlsoClosedForm, setSeeAlsoClosedForm] = useState<string[][]>();
 	const [pcf, setPcf] = useState('');
 
+	// MathJax config
 	const config = {
 		tex: {
 			inlineMath: [['$', '$']],
@@ -59,8 +62,14 @@ function Charts({ a_n, b_n, limit, symbol, convergesTo, deltaData, toggleDisplay
 	}, [limit]);
 
 	useEffect(() => {
+		if (Array.isArray(seeAlso) && seeAlso.length > 0) {
+			setSeeAlsoClosedForm(restructureSeeAlso(seeAlso));
+		}
+	}, [seeAlso]);
+
+	useEffect(() => {
 		if (Array.isArray(convergesTo) && convergesTo.length > 0) {
-			setLirecClosedForm(replaceLirecChars());
+			setLirecClosedForm(replaceLirecChars(convergesTo));
 		}
 	}, [convergesTo]);
 
@@ -77,42 +86,71 @@ function Charts({ a_n, b_n, limit, symbol, convergesTo, deltaData, toggleDisplay
 		}
 	};
 
-	useEffect(() => {
-		let [a0, a1, a2, a3] = [a_n, a_n, a_n, a_n];
-		let [b1, b2, b3] = [b_n, b_n, b_n];
-		if (symbol) {
-			if (a_n.indexOf(symbol) >= 0) {
-				a0 = parse(a_n.replaceAll(symbol, '0').replaceAll('**','^')).evaluate();
-				a1 = parse(a_n.replaceAll(symbol, '1').replaceAll('**','^')).evaluate();
-				a2 = parse(a_n.replaceAll(symbol, '2').replaceAll('**','^')).evaluate();
-				a3 = parse(a_n.replaceAll(symbol, '3').replaceAll('**','^')).evaluate();
-			}
-			if (b_n.indexOf(symbol) >= 0) {
-				b1 = parse(b_n.replaceAll(symbol, '1').replaceAll('**','^')).evaluate();
-				b2 = parse(b_n.replaceAll(symbol, '2').replaceAll('**','^')).evaluate();
-				b3 = parse(b_n.replaceAll(symbol, '3').replaceAll('**','^')).evaluate();
-			}
-		}
-		let parsed = parse(`${a0} + (${b1} / (${a1} + (${b2} / (${a2} + (${b3} / (${a3} + dots))))))`);
+	let formatPcf = function(_a_n: string, _b_n:string) {
+		// preset to input value
+		console.log('format inputs' ,_a_n, _b_n);
+		let a = _a_n.replaceAll('**','^');
+		console.log('a', a);
+		let a_parsed = parse(a);
+		console.log('a parsed', a_parsed);
+		let b = _b_n.replaceAll('**','^');
+		console.log('b', b);
+		let b_parsed = parse(b);
+		console.log('b parsed', b_parsed);
+		let [a0, a1, a2] = [a_parsed.evaluate({n: 0}), a_parsed.evaluate({n: 1}), a_parsed.evaluate({n: 2})];
+		console.log('a0',a0, 'a1',a1,'a2',a2);
+		let [b1_eval, b2_eval, b3_eval] = [b_parsed.evaluate({n: 1}),b_parsed.evaluate({n: 2}),b_parsed.evaluate({n: 3})];
+		let [,b1_sign, b2_sign, b3_sign] = [undefined, b1_eval > 0 ? '+': '-',b2_eval > 0 ? '+': '-',b3_eval > 0 ? '+': '-'];
+		console.log('b signs', b1_sign, b2_sign, b3_sign);
+		let parsed = parse(`${a0} ${b1_sign} (${b1_eval} / (${a1} ${b2_sign} (${b2_eval} / (${a2} ${b3_sign} (${b3_eval} / (dots + ${b} / (${a} + dots)))))))`);
+		console.log('parsed', parsed);
 		let mathy = parsed.toTex({ parenthesis: 'auto' });
 		// this is a hack because mathjs chokes on the dots so we put them in after the expression is Texed
-		setPcf(`$$${mathy.replaceAll('dots', '...')}$$`);
+		return `$$${mathy.replaceAll('dots', '...')}$$`;
+	}
+
+	useEffect(() => {
+		setPcf(formatPcf(a_n, b_n));
 	}, [a_n, b_n, symbol]);
 
-	const replaceLirecChars = () => {
+	const restructureSeeAlso = (input: string[]) => {
+		let result = new Array<string[]>();
+		for (const value of input!!) {
+			console.log('input',value);
+			const cleanString = value
+				.replaceAll('PCF[','')
+				.replaceAll('] =', '=')
+				.replaceAll('**', '^')
+				.replace(/\s\(-?[0-9]+\)$/, '');
+			console.log('clean', cleanString);
+			const input = convertLirecConstants(cleanString);
+			console.log('converted', input);
+			let [pcf_a, remnant] = input.split(',');
+			console.log('pcf_a', pcf_a, 'remnant', remnant);
+			let [pcf_b, exp] = remnant.split('=');
+			console.log('pcf_b', pcf_b, 'exp', exp);
+			console.log('wrapped pcf', formatPcf(pcf_a, pcf_b));
+			console.log('wrapped exp', wrapExpression(exp));
+			result.push([wrapExpression(exp), formatPcf(pcf_a, pcf_b)]);
+		}
+		return result;
+	};
+
+	const replaceLirecChars = (input: string[]) => {
 		// we are replacing the exponent operator from python to js syntax
 		// we are also stripping the parentheses at the end of the expression returned from identify
 		let result = new Array<string>();
-		for (const value of convergesTo!!) {
+		for (const value of input!!) {
 			const cleanString = value
 				.replaceAll('**', '^')
 				.replace(' = 0', '')
-				.replace(/\s\([0-9]+\)$/, '');
+				.replace(/\s\(-?[0-9]+\)$/, '');
 			const input = convertLirecConstants(cleanString);
 			result.push(wrapExpression(input));
 		}
 		return result;
 	};
+
 	// e.g. '(20*alpha_GW - 34)/(alpha_GW + 9)'
 	// should convert to '(20*α[GW] - 34)/(α[GW] + 9)'
 	const convertLirecConstants = (input: string) => {
@@ -196,8 +234,7 @@ function Charts({ a_n, b_n, limit, symbol, convergesTo, deltaData, toggleDisplay
 
 	const verify = () => {
 		if (limit) {
-			axios
-				.post('/verify', { expression: limit })
+			axios.post('/verify', { expression: limit })
 				.then((response) => {
 					if (response.status != 200) {
 						console.warn(response.data.error);
@@ -331,6 +368,38 @@ function Charts({ a_n, b_n, limit, symbol, convergesTo, deltaData, toggleDisplay
 									))
 									: ''}
 							</div>
+						</div>
+					</div>
+				) : (
+					''
+				)}
+				{seeAlso ? (
+					<div className="full-width top-padding">
+						<p className="center-content">See also</p>
+						<div className="top-padding center-text">
+							<p className="footnote">
+								<i>
+									Results from{' '}
+									<a
+										href="https://github.com/RamanujanMachine/LIReC"
+										aria-description="Link to LIReC GitHub repository README.">
+										LIReC
+									</a>
+								</i>
+							</p>
+						</div>
+						<div className="closed-form-container">
+							{seeAlsoClosedForm?.map((pcf: string[]) =>
+								(<div className="closed-form" key={pcf[0]}>
+									<MathJax inline dynamic>
+										{pcf[0]}
+									</MathJax>
+									<span className="align-self-center">=</span>
+									<MathJax inline dynamic>
+										{pcf[1]}
+									</MathJax>
+								</div>)
+							)}
 						</div>
 					</div>
 				) : (

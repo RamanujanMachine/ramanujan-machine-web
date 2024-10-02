@@ -8,6 +8,8 @@ The web portal was developed by the [Virtual Institute for Scientific Software](
 
 The repository comprises a complete web application, including web server code, React UI code and an automated deployment in GitHub Actions workflows that builds a Docker container and deploys it to a cloud server, currently AWS EC2.
 
+![architecture.png](architecture.png)
+
 ### 1.2. Technologies Used
 
 The web portal was written primarily in [Typescript](https://www.typescriptlang.org/docs/handbook/2/basic-types.html) and [Python](https://docs.python.org/3/tutorial/index.html). 

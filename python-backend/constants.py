@@ -5,6 +5,6 @@ DEFAULT_PRECISION = 30
 # evalf allows for verbose output via param universally set to this:
 VERBOSE_EVAL = False
 # when calling ResearchTools, only way this many seconds before throwing a timeout exception
-EXTERNAL_PROCESS_TIMEOUT = 10
+EXTERNAL_PROCESS_TIMEOUT = 30
 # the free Wolfram API limits queries to 200 characters
 WOLFRAM_CHAR_LIMIT = 200

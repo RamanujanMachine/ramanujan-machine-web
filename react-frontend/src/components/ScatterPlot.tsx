@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import * as d3 from 'd3';
 import { CoordinatePair } from '../lib/types';
 
-const svg_width = 560,
+const svg_width = 860,
 	svg_height = 400;
 
 const ScatterPlot = ({ id, data }: { id: string; data?: CoordinatePair[] }) => {

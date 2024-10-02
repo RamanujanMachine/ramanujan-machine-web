@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # Start gRPC server
 cd lirec-grpc-server
@@ -14,7 +14,7 @@ uvicorn main:app --host "0.0.0.0" --port 80 &
 deactivate
 
 # Wait for any process to exit
-wait -n
+wait
 
 # Exit with status of process that exited first
 exit $?

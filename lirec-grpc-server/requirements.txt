@@ -1,13 +1,13 @@
-numpy==1.26.4
-setuptools==65.5.1
-packaging==24.0
-logger==1.4
+## The following requirements were added by pip freeze:
 gmpy2==2.2.0a1
-grpcio>=1.64.0
-grpcio-tools>=1.64.0
-LIReC @ git+https://github.com/RamanujanMachine/LIReC.git@main
+grpcio==1.66.1
+grpcio-tools==1.66.1
+LIReC @ git+https://github.com/RamanujanMachine/LIReC.git@ba7d9a9e6ec3c1126cacdcb628b4497a5a51be1c
+logger==1.4
 mpmath==1.3.0
+numpy==1.26.4
 ordered-set==4.1.0
+packaging==24.0
 protobuf==5.26.1
 psycopg2==2.9.9
 PyLaTeX==1.4.2
